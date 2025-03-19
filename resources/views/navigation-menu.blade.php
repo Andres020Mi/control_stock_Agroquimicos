@@ -19,11 +19,51 @@
 
                 @if(Auth::user()->role == "admin")
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        admin
+                    <x-jet-nav-link href="{{ route('insumos.index') }}" :active="request()->routeIs('insumos.index')">
+                        Insumos
                     </x-jet-nav-link>
                 </div>
                 @endif
+
+
+                
+                @if(Auth::user()->role == "admin")
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-jet-nav-link href="{{ route('stocks.index') }}" :active="request()->routeIs('stocks.index')">
+                        Stock
+                    </x-jet-nav-link>
+                </div>
+                @endif
+
+                   
+                @if(Auth::user()->role == "admin")
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-jet-nav-link href="{{ route('almacenes.index') }}" :active="request()->routeIs('almacenes.index')">
+                        Almacenes
+                    </x-jet-nav-link>
+                </div>
+                @endif
+
+                @if(Auth::user()->role == "admin")
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-jet-nav-link href="{{ route('movimientos.index') }}" :active="request()->routeIs('movimientos.index')">
+                        movimientos
+                    </x-jet-nav-link>
+                </div>
+                @endif
+
+                
+
+                
+                
+                @if(Auth::user()->role == "admin")
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-jet-nav-link href="{{ route('unidades_de_produccion.index') }}" :active="request()->routeIs('unidades_de_produccion.index')">
+                        Uniddades de producción
+                    </x-jet-nav-link>
+                </div>
+                @endif
+             
 
                 @if(Auth::user()->role == "user")
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">

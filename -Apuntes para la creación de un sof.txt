@@ -1,0 +1,88 @@
+-Apuntes para la creación de un software para el control del stock de agroquímicos 
+-> se necesita registrar los insumos, los cuales llevaran (nombre,compocicion quimica,undiad de medida,imagen)
+-> se requiere un stock que permitirá registrar la cantidad de un insumo que se tiene la cual llevara (id_insumo,cantidad,fecha de vencimiento,id_almacen)
+-> se requiere registrar los almacenes donde se almacenaran algunos stocks lo cual tendra (nombre,decripcion)
+-> se requiere registrar los movimientos movimientos , cada entrada generara un nuevo sotck por lo que tendrá una fecha de caducida diferente, cada salida se registrara y disminuirá el estock al que afecto , todo esto tendrá (id_user "quien lo movio",si es entrada o salida,id_unidad_de_produccion)
+-> se requiere registrar las unidades de producción las cuales tendrán un listado de los insumos que están en su poder
+
+--__________________________________________________________________________________________-
+
+
+  public function up()
+    {
+        Schema::create('insumos', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre');
+            $table->string('composicion_quimica');
+            $table->enum('unidad_de_medida',['kg','g','l','ml']); // e.g., litros, kg, etc.
+            $table->string('imagen')->nullable(); // Path to the image
+            $table->timestamps();
+        });
+    }
+
+
+
+
+  Schema::create('almacenes', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre');
+            $table->text('descripcion')->nullable();
+            $table->timestamps();
+        });
+
+
+    Schema::create('stocks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_insumo')->constrained('insumos')->onDelete('cascade');
+            $table->integer('cantidad'); 
+            $table->date('fecha_de_vencimiento');
+            $table->foreignId('id_almacen')->constrained('almacenes')->onDelete('cascade');
+            $table->enum('estado',['caducado','utilizable','agotado'])->default('utilizable');
+            $table->timestamps();
+        });
+
+
+
+
+     Schema::create('movimientos', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_user')->constrained('users')->onDelete('cascade'); // Assuming a users table exists
+            $table->enum('tipo', ['entrada', 'salida']); // Input or output
+            $table->foreignId('id_stock')->constrained('stocks')->onDelete('cascade');
+            $table->integer('cantidad'); // Amount moved
+            $table->foreignId('id_unidad_de_produccion')->nullable()->constrained('unidades_de_produccion')->onDelete('set null');
+            $table->timestamps();
+        });
+    }
+
+
+
+
+   Schema::create('unidades_de_produccion', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre');
+            $table->text('descripcion')->nullable();
+            $table->timestamps();
+        });
+
+        // Pivot table to link production units with insumos
+        Schema::create('insumo_unidad_de_produccion', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_insumo')->constrained('insumos')->onDelete('cascade');
+            $table->foreignId('id_unidad_de_produccion')->constrained('unidades_de_produccion')->onDelete('cascade');
+            $table->integer('cantidad')->default(0); 
+            $table->timestamps();
+        });
+    }
+
+
+
+
+
+__________________________________________________
+
+
+
+
+__________________________________________
+
