@@ -1,18 +1,16 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Insumo</title>
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet"> <!-- Assuming Tailwind/Bootstrap via app.css -->
-</head>
-<body>
-    <div class="container mt-5">
-        <h1>Crear Nuevo Insumo</h1>
+@extends('layouts.app')
+
+@section('header')
+    Crear Insumo
+@endsection
+
+@section('content')
+    <div class="container mx-auto py-8">
+        <h1 class="text-3xl font-bold text-green-800 mb-6">Crear Nuevo Insumo</h1>
 
         @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
+            <div class="mb-6 p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-r-lg shadow-md">
+                <ul class="list-disc pl-5">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -20,21 +18,22 @@
             </div>
         @endif
 
-        <form action="{{ route('insumos.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('insumos.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-lg border border-gray-300">
             @csrf
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre</label>
-                <input type="text" name="nombre" id="nombre" class="form-control" value="{{ old('nombre') }}" required>
+
+            <div class="mb-4">
+                <label for="nombre" class="block text-sm font-semibold text-gray-700">Nombre</label>
+                <input type="text" name="nombre" id="nombre" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-green-300" value="{{ old('nombre') }}" required>
             </div>
 
-            <div class="mb-3">
-                <label for="composicion_quimica" class="form-label">Composición Química</label>
-                <input type="text" name="composicion_quimica" id="composicion_quimica" class="form-control" value="{{ old('composicion_quimica') }}" required>
+            <div class="mb-4">
+                <label for="composicion_quimica" class="block text-sm font-semibold text-gray-700">Composición Química</label>
+                <input type="text" name="composicion_quimica" id="composicion_quimica" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-green-300" value="{{ old('composicion_quimica') }}" required>
             </div>
 
-            <div class="mb-3">
-                <label for="unidad_de_medida" class="form-label">Unidad de Medida</label>
-                <select name="unidad_de_medida" id="unidad_de_medida" class="form-control" required>
+            <div class="mb-4">
+                <label for="unidad_de_medida" class="block text-sm font-semibold text-gray-700">Unidad de Medida</label>
+                <select name="unidad_de_medida" id="unidad_de_medida" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-green-300" required>
                     <option value="kg" {{ old('unidad_de_medida') == 'kg' ? 'selected' : '' }}>Kilogramos (kg)</option>
                     <option value="g" {{ old('unidad_de_medida') == 'g' ? 'selected' : '' }}>Gramos (g)</option>
                     <option value="l" {{ old('unidad_de_medida') == 'l' ? 'selected' : '' }}>Litros (l)</option>
@@ -42,14 +41,19 @@
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label for="imagen" class="form-label">Imagen (Opcional)</label>
-                <input type="file" name="imagen" id="imagen" class="form-control">
+            <div class="mb-4">
+                <label for="imagen" class="block text-sm font-semibold text-gray-700">Imagen (Opcional)</label>
+                <input type="file" name="imagen" id="imagen" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-green-300" accept="image/*">
             </div>
 
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ route('insumos.index') }}" class="btn btn-secondary">Cancelar</a>
+            <div class="flex space-x-4">
+                <button type="submit" class="px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
+                    Guardar
+                </button>
+                <a href="{{ route('insumos.index') }}" class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow hover:bg-gray-700 transition duration-200">
+                    Cancelar
+                </a>
+            </div>
         </form>
     </div>
-</body>
-</html>
+@endsection

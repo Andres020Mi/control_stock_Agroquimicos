@@ -5,51 +5,64 @@
 @endsection
 
 @section('content')
-    <div class="container mt-5">
-        <h1>Listado de Unidades de Producción</h1>
+    <div class="container mx-auto py-8">
+        <h1 class="text-3xl font-bold text-green-800 mb-6">Listado de Unidades de Producción</h1>
 
         @if (session('success'))
-            <div class="alert alert-success">
+            <div class="mb-6 p-4 bg-green-100 border-l-4 border-green-600 text-green-800 rounded-r-lg shadow-md">
                 {{ session('success') }}
             </div>
         @endif
 
-        <a href="{{ route('unidades_de_produccion.create') }}" class="btn btn-primary mb-3">Crear Nueva Unidad de Producción</a>
+        <div class="mb-6">
+            <a href="{{ route('unidades_de_produccion.create') }}" class="inline-block px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
+                Crear Nueva Unidad de Producción
+            </a>
+        </div>
 
-        <table class="table table-bordered" id="miTabla">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($unidades as $unidad)
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
+            <table class="w-full table-auto" id="miTabla">
+                <thead class="bg-green-700 text-white">
                     <tr>
-                        <td>{{ $unidad->id }}</td>
-                        <td>{{ $unidad->nombre }}</td>
-                        <td>{{ $unidad->descripcion ?? 'Sin descripción' }}</td>
-                        <td>
-                            <a href="{{ route('unidades_de_produccion.edit', $unidad->id) }}" class="btn btn-sm btn-warning">Editar</a>
-                            <form action="{{ route('unidades_de_produccion.destroy', $unidad->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar esta unidad de producción? Esto también eliminará las relaciones con insumos y movimientos asociados.');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                            </form>
-                        </td>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">ID</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Nombre</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Descripción</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Acciones</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="text-center">No hay unidades de producción registradas.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="bg-gray-50">
+                    @forelse ($unidades as $unidad)
+                        <tr class="hover:bg-green-50 transition duration-150">
+                            <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $unidad->id }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $unidad->nombre }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $unidad->descripcion ?? 'Sin descripción' }}</td>
+                            <td class="px-6 py-4 text-sm border-t border-gray-200">
+                                <a href="{{ route('unidades_de_produccion.edit', $unidad->id) }}" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition duration-200">
+                                    Editar
+                                </a>
+                                <form action="{{ route('unidades_de_produccion.destroy', $unidad->id) }}" method="POST" class="inline delete-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="ml-2 inline-block px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition duration-200">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-sm text-gray-600 text-center border-t border-gray-200">No hay unidades de producción registradas.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SweetAlert2 -->
+        <script src="{{ asset('DataTables/sweetalert2.js') }}"></script>
+
 
         <!-- External Resources -->
-        <!-- CSS -->
         <link rel="stylesheet" href="{{ asset('DataTables/jquery.dataTables.min.css') }}">
         <link rel="stylesheet" href="{{ asset('DataTables/buttons.dataTables.min.css') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -93,8 +106,29 @@
                     responsive: true,
                     order: [[0, 'desc']],
                     columnDefs: [
-                        { targets: 3, orderable: false, searchable: false } // Disable sorting/searching on Acciones column
+                        { targets: 3, orderable: false, searchable: false }
                     ]
+                });
+
+                // SweetAlert2 para confirmación de eliminación
+                $('.delete-form').on('submit', function(e) {
+                    e.preventDefault();
+                    const form = this;
+
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: '¿Quieres eliminar esta unidad de producción? Esto también eliminará las relaciones con insumos y movimientos asociados.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
                 });
             });
         </script>

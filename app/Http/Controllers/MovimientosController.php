@@ -17,11 +17,10 @@ class MovimientosController extends Controller
         return view('movimientos.index', compact('movimientos'));
     }
 
-    // Mostrar formulario de creación
     public function create()
     {
         $stocks = Stock::with('insumo', 'almacen')->where('estado', 'utilizable')->get();
-        $unidades = unidades_de_produccion::all(); // Cambio aquí: modelo con el nuevo nombre
+        $unidades = unidades_de_produccion::all();
         return view('movimientos.create', compact('stocks', 'unidades'));
     }
 
@@ -31,38 +30,55 @@ class MovimientosController extends Controller
         $request->validate([
             'tipo' => 'required|in:entrada,salida',
             'id_stock' => 'required|exists:stocks,id',
-            'cantidad' => 'required|integer|min:1',
-            'id_unidad_de_produccion' => 'nullable|exists:unidades_de_produccion,id',
+            'unidades' => 'required_if:tipo,salida|array', // Requerido solo para salidas
+            'unidades.*' => 'exists:unidades_de_produccion,id',
+            'cantidades' => 'required_if:tipo,salida|array', // Requerido solo para salidas
+            'cantidades.*' => 'integer|min:1',
         ]);
 
         $stock = Stock::findOrFail($request->id_stock);
+        $tipo = $request->tipo;
+        $unidades = $request->input('unidades', []);
+        $cantidades = $request->input('cantidades', []);
 
-        // Verificar stock en caso de salida
-        if ($request->tipo === 'salida') {
-            if ($stock->cantidad < $request->cantidad) {
-                return back()->withErrors(['cantidad' => 'La cantidad solicitada excede el stock disponible.']);
+        // Validar que las cantidades no excedan el stock para salidas
+        if ($tipo === 'salida') {
+            $totalCantidad = array_sum($cantidades);
+            if ($stock->cantidad < $totalCantidad) {
+                return back()->withErrors(['cantidades' => 'La suma de las cantidades excede el stock disponible (' . $stock->cantidad . ').']);
             }
-            $stock->cantidad -= $request->cantidad;
-        } elseif ($request->tipo === 'entrada') {
-            $stock->cantidad += $request->cantidad;
+            $stock->cantidad -= $totalCantidad;
+        } else { // Entrada
+            $totalCantidad = array_sum($cantidades ?: [0]); // Si no hay cantidades, usar 0
+            $stock->cantidad += $totalCantidad;
         }
 
-        // Actualizar estado del stock si es necesario
-        if ($stock->cantidad == 0) {
-            $stock->estado = 'caducado';
-        }
+        // Actualizar estado del stock
+        $stock->estado = $stock->cantidad > 0 ? 'utilizable' : 'caducado';
         $stock->save();
 
-        // Crear el movimiento
-        $movimiento = new Movimiento();
-        $movimiento->id_user = Auth::id();
-        $movimiento->tipo = $request->tipo;
-        $movimiento->id_stock = $request->id_stock;
-        $movimiento->cantidad = $request->cantidad;
-        $movimiento->id_unidad_de_produccion = $request->id_unidad_de_produccion;
-        $movimiento->save();
+        // Crear movimientos solo si hay unidades seleccionadas (para salidas)
+        if ($tipo === 'salida' && !empty($unidades)) {
+            foreach ($unidades as $index => $unidadId) {
+                $movimiento = new Movimiento();
+                $movimiento->id_user = Auth::id();
+                $movimiento->tipo = $tipo;
+                $movimiento->id_stock = $request->id_stock;
+                $movimiento->cantidad = $cantidades[$index];
+                $movimiento->id_unidad_de_produccion = $unidadId;
+                $movimiento->save();
+            }
+        } else { // Para entradas, un solo movimiento sin unidad (o con una si se especifica)
+            $movimiento = new Movimiento();
+            $movimiento->id_user = Auth::id();
+            $movimiento->tipo = $tipo;
+            $movimiento->id_stock = $request->id_stock;
+            $movimiento->cantidad = $totalCantidad ?: $request->input('cantidades.0', 0); // Usar primera cantidad si existe
+            $movimiento->id_unidad_de_produccion = null; // No se usa para entradas generalmente
+            $movimiento->save();
+        }
 
-        return redirect()->route('movimientos.index')->with('success', 'Movimiento registrado exitosamente.');
+        return redirect()->route('movimientos.index')->with('success', 'Movimientos registrados exitosamente.');
     }
 
     // Show the form to edit an existing movimiento
