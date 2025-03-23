@@ -7,7 +7,7 @@ use App\Http\Controllers\AlmacenesController;
 use App\Http\Controllers\StocksController;
 
 use App\Http\Controllers\MovimientosController;
-
+use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\UnidadesDeProduccionController;
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +68,14 @@ Route::middleware(['role:admin'])->group(function () {
     Route::put('/unidades-de-produccion/{id}', [UnidadesDeProduccionController::class, 'update'])->name('unidades_de_produccion.update');
     Route::delete('/unidades-de-produccion/{id}', [UnidadesDeProduccionController::class, 'destroy'])->name('unidades_de_produccion.destroy');
 
+
+
+Route::get('/proveedores', [ProveedoresController::class, 'index'])->name('proveedores.index');
+Route::get('/proveedores/create', [ProveedoresController::class, 'create'])->name('proveedores.create');
+Route::post('/proveedores', [ProveedoresController::class, 'store'])->name('proveedores.store');
+Route::get('/proveedores/{id}/edit', [ProveedoresController::class, 'edit'])->name('proveedores.edit');
+Route::put('/proveedores/{id}', [ProveedoresController::class, 'update'])->name('proveedores.update');
+Route::delete('/proveedores/{id}', [ProveedoresController::class, 'destroy'])->name('proveedores.destroy');
 });
 
 

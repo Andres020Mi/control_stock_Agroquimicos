@@ -51,10 +51,23 @@
                 </div>
 
                 <div class="mb-6">
+                    <label for="id_proveedor" class="block text-sm font-semibold text-gray-700 mb-2">Proveedor (Opcional)</label>
+                    <select name="id_proveedor" id="id_proveedor" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Sin proveedor</option>
+                        @foreach ($proveedores as $proveedor)
+                            <option value="{{ $proveedor->id }}" {{ old('id_proveedor', $stock->id_proveedor) == $proveedor->id ? 'selected' : '' }}>
+                                {{ $proveedor->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-6">
                     <label for="estado" class="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
                     <select name="estado" id="estado" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
                         <option value="utilizable" {{ old('estado', $stock->estado) == 'utilizable' ? 'selected' : '' }}>Utilizable</option>
                         <option value="caducado" {{ old('estado', $stock->estado) == 'caducado' ? 'selected' : '' }}>Caducado</option>
+                        <option value="agotado" {{ old('estado', $stock->estado) == 'agotado' ? 'selected' : '' }}>Agotado</option> <!-- Agregado -->
                     </select>
                 </div>
 
@@ -72,7 +85,6 @@
 
     <!-- SweetAlert2 -->
     <script src="{{ asset('DataTables/sweetalert2.js') }}"></script>
-
 
     <script>
         document.querySelector('.update-form').addEventListener('submit', function(e) {

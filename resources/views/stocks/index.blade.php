@@ -26,9 +26,11 @@
                     <tr>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">ID</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Insumo</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Cantidad</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Cantidad actual</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Cantidad inicial</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Fecha de Vencimiento</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Almacén</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Proveedor</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Estado</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Acciones</th>
                     </tr>
@@ -39,25 +41,29 @@
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->id }}</td>
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->insumo->nombre }}</td>
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->cantidad }} {{ $stock->insumo->unidad_de_medida }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->cantidad_inicial ?? 'N/A' }} {{ $stock->insumo->unidad_de_medida }}</td>
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->fecha_de_vencimiento }}</td>
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->almacen->nombre }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->proveedor ? $stock->proveedor->nombre : 'Sin proveedor' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $stock->estado }}</td>
                             <td class="px-6 py-4 text-sm border-t border-gray-200">
-                                <a href="{{ route('stocks.edit', $stock->id) }}" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition duration-200">
-                                    Editar
-                                </a>
-                                <form action="{{ route('stocks.destroy', $stock->id) }}" method="POST" class="inline delete-form">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="ml-2 inline-block px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition duration-200">
-                                        Eliminar
-                                    </button>
-                                </form>
+                                <div class="flex space-x-2">
+                                    <a href="{{ route('stocks.edit', $stock->id) }}" class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition duration-200">
+                                        Editar
+                                    </a>
+                                    <form action="{{ route('stocks.destroy', $stock->id) }}" method="POST" class="inline delete-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="px-3 py-1 bg-red-700 text-white text-sm rounded-lg hover:bg-red-800 transition duration-200">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-sm text-gray-600 text-center border-t border-gray-200">No hay stocks registrados.</td>
+                            <td colspan="9" class="px-6 py-4 text-sm text-gray-600 text-center border-t border-gray-200">No hay stocks registrados.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -67,7 +73,6 @@
         <!-- SweetAlert2 -->
         <script src="{{ asset('DataTables/sweetalert2.js') }}"></script>
 
-        
         <!-- External Resources -->
         <link rel="stylesheet" href="{{ asset('DataTables/jquery.dataTables.min.css') }}">
         <link rel="stylesheet" href="{{ asset('DataTables/buttons.dataTables.min.css') }}">
@@ -112,7 +117,7 @@
                     responsive: true,
                     order: [[0, 'desc']],
                     columnDefs: [
-                        { targets: 6, orderable: false, searchable: false }
+                        { targets: 8, orderable: false, searchable: false, width: '150px' } // Ancho mínimo para Acciones
                     ]
                 });
 

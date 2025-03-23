@@ -4,17 +4,74 @@ namespace App\Http\Controllers;
 
 use App\Models\Movimiento;
 use App\Models\Stock;
-use App\Models\unidades_de_produccion; // Cambio aquí: nombre del modelo en minúsculas y con guiones bajos
+use App\Models\unidades_de_produccion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\DataTables;
 
 class MovimientosController extends Controller
 {
     // Mostrar lista de movimientos
-    public function index()
+    public function index(Request $request)
     {
-        $movimientos = Movimiento::with(['stock.insumo', 'stock.almacen', 'unidadDeProduccion', 'user'])->get();
-        return view('movimientos.index', compact('movimientos'));
+        if ($request->ajax()) {
+            try {
+                $query = Movimiento::with([
+                    'stock.insumo' => function ($q) {
+                        $q->select('id', 'nombre', 'unidad_de_medida');
+                    },
+                    'stock.almacen' => function ($q) {
+                        $q->select('id', 'nombre');
+                    },
+                    'unidadDeProduccion' => function ($q) {
+                        $q->select('id', 'nombre');
+                    },
+                    'user' => function ($q) {
+                        $q->select('id', 'name');
+                    }
+                ])
+                ->select('id', 'tipo', 'id_stock', 'cantidad', 'id_unidad_de_produccion', 'id_user', 'created_at');
+
+                return DataTables::of($query)
+                    ->addColumn('insumo_nombre', function (Movimiento $movimiento) {
+                        return $movimiento->stock->insumo->nombre ?? 'N/A';
+                    })
+                    ->addColumn('cantidad_unidad', function (Movimiento $movimiento) {
+                        return $movimiento->cantidad . ' ' . ($movimiento->stock->insumo->unidad_de_medida ?? '');
+                    })
+                    ->addColumn('almacen_nombre', function (Movimiento $movimiento) {
+                        return $movimiento->stock->almacen->nombre ?? 'N/A';
+                    })
+                    ->addColumn('unidad_produccion_nombre', function (Movimiento $movimiento) {
+                        return $movimiento->unidadDeProduccion->nombre ?? 'N/A';
+                    })
+                    ->addColumn('usuario_nombre', function (Movimiento $movimiento) {
+                        return $movimiento->user->name ?? 'Desconocido';
+                    })
+                    ->editColumn('created_at', function (Movimiento $movimiento) {
+                        return $movimiento->created_at->format('d/m/Y H:i');
+                    })
+                    ->addColumn('acciones', function (Movimiento $movimiento) {
+                        return '
+                            <a href="' . route('movimientos.edit', $movimiento->id) . '" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition duration-200">
+                                Editar
+                            </a>
+                            <form action="' . route('movimientos.destroy', $movimiento->id) . '" method="POST" class="inline delete-form">
+                                ' . csrf_field() . '
+                                ' . method_field('DELETE') . '
+                                <button type="submit" class="ml-2 inline-block px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition duration-200">
+                                    Eliminar
+                                </button>
+                            </form>';
+                    })
+                    ->rawColumns(['acciones'])
+                    ->make(true);
+            } catch (\Exception $e) {
+              echo "xd";
+            }
+        }
+
+        return view('movimientos.index');
     }
 
     public function create()
@@ -23,6 +80,9 @@ class MovimientosController extends Controller
         $unidades = unidades_de_produccion::all();
         return view('movimientos.create', compact('stocks', 'unidades'));
     }
+
+
+   
 
     // Guardar un nuevo movimiento
     public function store(Request $request)

@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('header')
-    Movimientos
+    Proveedores
 @endsection
 
 @section('content')
     <div class="container mx-auto py-8">
-        <h1 class="text-3xl font-bold text-green-800 mb-6">Listado de Movimientos</h1>
+        <h1 class="text-3xl font-bold text-green-800 mb-6">Listado de Proveedores</h1>
 
         @if (session('success'))
             <div class="mb-6 p-4 bg-green-100 border-l-4 border-green-600 text-green-800 rounded-r-lg shadow-md">
@@ -15,23 +15,22 @@
         @endif
 
         <div class="mb-6">
-            <a href="{{ route('movimientos.create') }}" class="inline-block px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
-                Crear Nuevo Movimiento
+            <a href="{{ route('proveedores.create') }}" class="inline-block px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
+                Crear Nuevo Proveedor
             </a>
         </div>
 
         <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
-            <table class="w-full table-auto" id="miTabla">
+            <table class="w-full table-auto" id="proveedoresTabla">
                 <thead class="bg-green-700 text-white">
                     <tr>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">ID</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Tipo</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Insumo</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Cantidad</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Almacén</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Unidad de Producción</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Usuario</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Fecha</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Nombre</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">NIT</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Teléfono</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Email</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Dirección</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Fecha de Creación</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Acciones</th>
                     </tr>
                 </thead>
@@ -60,11 +59,11 @@
         <!-- DataTables Initialization -->
         <script>
             $(document).ready(function() {
-                var table = $('#miTabla').DataTable({
+                var table = $('#proveedoresTabla').DataTable({
                     processing: true,
                     serverSide: true,
                     ajax: {
-                        url: '{{ route('movimientos.index') }}',
+                        url: '{{ route('proveedores.index') }}',
                         error: function(xhr, error, thrown) {
                             console.log('Error en la solicitud AJAX:', xhr.responseText);
                             alert('Error al cargar los datos: ' + xhr.status + ' ' + xhr.statusText);
@@ -72,14 +71,34 @@
                     },
                     columns: [
                         { data: 'id', name: 'id' },
-                        { data: 'tipo', name: 'tipo', render: function(data) { return data.charAt(0).toUpperCase() + data.slice(1); } },
-                        { data: 'insumo_nombre', name: 'stock.insumo.nombre' },
-                        { data: 'cantidad_unidad', name: 'cantidad' },
-                        { data: 'almacen_nombre', name: 'stock.almacen.nombre' },
-                        { data: 'unidad_produccion_nombre', name: 'unidadDeProduccion.nombre' },
-                        { data: 'usuario_nombre', name: 'user.name' },
+                        { data: 'nombre', name: 'nombre' },
+                        { data: 'nit', name: 'nit' },
+                        { data: 'telefono', name: 'telefono' },
+                        { data: 'email', name: 'email' },
+                        { data: 'direccion', name: 'direccion' },
                         { data: 'created_at', name: 'created_at' },
-                        { data: 'acciones', name: 'acciones', orderable: false, searchable: false }
+                        { 
+                            data: 'acciones', 
+                            name: 'acciones', 
+                            orderable: false, 
+                            searchable: false,
+                            render: function(data, type, row) {
+                                return `
+                                    <div class="flex space-x-2">
+                                        <a href="{{ url('proveedores/${row.id}/edit') }}" class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition duration-200">
+                                            Editar
+                                        </a>
+                                        <form action="{{ url('proveedores/${row.id}') }}" method="POST" class="inline delete-form">
+                                            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="px-3 py-1 bg-red-700 text-white text-sm rounded-lg hover:bg-red-800 transition duration-200">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                `;
+                            }
+                        }
                     ],
                     dom: 'Bfrtip',
                     buttons: [
@@ -107,7 +126,7 @@
                     responsive: true,
                     order: [[0, 'desc']],
                     columnDefs: [
-                        { targets: 8, orderable: false, searchable: false }
+                        { targets: 7, orderable: false, searchable: false, width: '150px' }
                     ]
                 });
 
@@ -118,7 +137,7 @@
 
                     Swal.fire({
                         title: '¿Estás seguro?',
-                        text: '¿Quieres eliminar este movimiento? Esta acción no se puede deshacer.',
+                        text: '¿Quieres eliminar este proveedor? Esta acción no se puede deshacer.',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',

@@ -56,6 +56,18 @@
                     </select>
                 </div>
 
+                <div class="mb-6">
+                    <label for="id_proveedor" class="block text-sm font-semibold text-gray-700 mb-2">Proveedor (Opcional)</label>
+                    <select name="id_proveedor" id="id_proveedor" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Sin proveedor</option>
+                        @foreach ($proveedores as $proveedor)
+                            <option value="{{ $proveedor->id }}" {{ old('id_proveedor') == $proveedor->id ? 'selected' : '' }}>
+                                {{ $proveedor->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="flex space-x-4">
                     <button type="submit" class="px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
                         Guardar

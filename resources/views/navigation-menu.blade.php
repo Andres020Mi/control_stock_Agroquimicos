@@ -18,8 +18,8 @@
                 </div>
 
                 @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('insumos.index') }}" :active="request()->routeIs('insumos.index')">
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex" >
+                    <x-jet-nav-link href="{{ route('insumos.index') }}" :active="request()->routeIs('insumos.index')" style="font-size: 18px;">
                         Insumos
                     </x-jet-nav-link>
                 </div>
@@ -29,16 +29,39 @@
                 
                 @if(Auth::user()->role == "admin")
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('stocks.index') }}" :active="request()->routeIs('stocks.index')">
+                    <x-jet-nav-link href="{{ route('stocks.index') }}" :active="request()->routeIs('stocks.index')" style="font-size: 18px;">
                         Stock
                     </x-jet-nav-link>
                 </div>
                 @endif
 
-                   
+             
+
                 @if(Auth::user()->role == "admin")
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('almacenes.index') }}" :active="request()->routeIs('almacenes.index')">
+                    <x-jet-nav-link href="{{ route('movimientos.index') }}" :active="request()->routeIs('movimientos.index')" style="font-size: 18px;">
+                        Movimientos
+                    </x-jet-nav-link>
+                </div>
+                @endif
+
+                
+
+                
+                
+                @if(Auth::user()->role == "admin")
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-jet-nav-link href="{{ route('unidades_de_produccion.index') }}" :active="request()->routeIs('unidades_de_produccion.index')" style="font-size: 18px;">
+                        Unidades de Producción
+                    </x-jet-nav-link>
+                </div>
+                @endif
+
+
+                      
+                @if(Auth::user()->role == "admin")
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    <x-jet-nav-link href="{{ route('almacenes.index') }}" :active="request()->routeIs('almacenes.index')" style="font-size: 18px;">
                         Almacenes
                     </x-jet-nav-link>
                 </div>
@@ -46,20 +69,8 @@
 
                 @if(Auth::user()->role == "admin")
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('movimientos.index') }}" :active="request()->routeIs('movimientos.index')">
-                        movimientos
-                    </x-jet-nav-link>
-                </div>
-                @endif
-
-                
-
-                
-                
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('unidades_de_produccion.index') }}" :active="request()->routeIs('unidades_de_produccion.index')">
-                        Uniddades de producción
+                    <x-jet-nav-link href="{{ route('proveedores.index') }}" :active="request()->routeIs('proveedores.index')" style="font-size: 18px;">
+                        Provedores
                     </x-jet-nav-link>
                 </div>
                 @endif

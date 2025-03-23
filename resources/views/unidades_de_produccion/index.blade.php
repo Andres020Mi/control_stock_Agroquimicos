@@ -37,16 +37,18 @@
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $unidad->nombre }}</td>
                             <td class="px-6 py-4 text-sm text-gray-800 border-t border-gray-200">{{ $unidad->descripcion ?? 'Sin descripción' }}</td>
                             <td class="px-6 py-4 text-sm border-t border-gray-200">
-                                <a href="{{ route('unidades_de_produccion.edit', $unidad->id) }}" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition duration-200">
-                                    Editar
-                                </a>
-                                <form action="{{ route('unidades_de_produccion.destroy', $unidad->id) }}" method="POST" class="inline delete-form">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="ml-2 inline-block px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition duration-200">
-                                        Eliminar
-                                    </button>
-                                </form>
+                                <div class="flex space-x-2">
+                                    <a href="{{ route('unidades_de_produccion.edit', $unidad->id) }}" class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition duration-200">
+                                        Editar
+                                    </a>
+                                    <form action="{{ route('unidades_de_produccion.destroy', $unidad->id) }}" method="POST" class="inline delete-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="px-3 py-1 bg-red-700 text-white text-sm rounded-lg hover:bg-red-800 transition duration-200">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -60,7 +62,6 @@
 
         <!-- SweetAlert2 -->
         <script src="{{ asset('DataTables/sweetalert2.js') }}"></script>
-
 
         <!-- External Resources -->
         <link rel="stylesheet" href="{{ asset('DataTables/jquery.dataTables.min.css') }}">
@@ -106,7 +107,7 @@
                     responsive: true,
                     order: [[0, 'desc']],
                     columnDefs: [
-                        { targets: 3, orderable: false, searchable: false }
+                        { targets: 3, orderable: false, searchable: false, width: '150px' } // Ancho mínimo para Acciones
                     ]
                 });
 
