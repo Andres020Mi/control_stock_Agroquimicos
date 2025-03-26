@@ -35,11 +35,36 @@
                     <select name="id_stock" id="id_stock" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
                         <option value="">Seleccione un stock</option>
                         @foreach ($stocks as $stock)
-                            <option value="{{ $stock->id }}" data-cantidad="{{ $stock->cantidad }}" {{ old('id_stock') == $stock->id ? 'selected' : '' }}>
-                                {{ $stock->insumo->nombre }} ({{ $stock->cantidad }} {{ $stock->insumo->unidad_de_medida }}) - Almacén: {{ $stock->almacen->nombre }}
+                            <option value="{{ $stock->id }}" 
+                                    data-cantidad=" {{  $stock->cantidad }}" 
+                                    data-insumo="{{ $stock->insumo->nombre }}" 
+                                    data-unidad="{{ $stock->insumo->unidad_de_medida }}" 
+                                    data-vencimiento="{{ $stock->fecha_de_vencimiento }}"
+                                    {{ old('id_stock') == $stock->id ? 'selected' : '' }}>
+                                {{ $stock->insumo->nombre }} ({{ $stock->cantidad }} {{ $stock->insumo->unidad_de_medida }}) - Almacén: {{ $stock->almacen->nombre }} - Vence: {{ $stock->fecha_de_vencimiento }}
                             </option>
                         @endforeach
                     </select>
+                </div>
+
+                <!-- Mini tabla para mostrar detalles del stock seleccionado -->
+                <div class="mb-6" id="stockDetails">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Detalles del Stock Seleccionado</label>
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Insumo</th>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Cantidad Actual</th>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Unidad de Medida</th>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Fecha de Vencimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockDetailsBody" class="bg-gray-50">
+                            <tr>
+                                <td colspan="4" class="px-4 py-2 text-sm text-gray-600 text-center">Seleccione un stock para ver los detalles</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="mb-6" id="unidadesContainer">
@@ -50,7 +75,10 @@
 
                 <div class="mb-6">
                     <label for="cantidad_total" class="block text-sm font-semibold text-gray-700 mb-2">Cantidad Total</label>
-                    <input type="number" id="cantidad_total" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                    <div class="relative">
+                        <input type="number" id="cantidad_total" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 pr-12" readonly>
+                        <span id="unidad_total" class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-700"></span>
+                    </div>
                 </div>
 
                 <div class="flex space-x-4">
@@ -72,6 +100,8 @@
                 const addUnidadBtn = document.getElementById('addUnidad');
                 const unidadesList = document.getElementById('unidadesList');
                 const cantidadTotalInput = document.getElementById('cantidad_total');
+                const unidadTotalSpan = document.getElementById('unidad_total');
+                const stockDetailsBody = document.getElementById('stockDetailsBody');
                 let unidadesData = @json($unidades);
 
                 function updateFormState() {
@@ -79,17 +109,40 @@
                     const stockSelected = stockSelect.value !== '';
                     addUnidadBtn.disabled = !(tipo === 'salida' && stockSelected);
                     if (tipo !== 'salida') unidadesList.innerHTML = '';
+                    updateStockDetails();
                     updateCantidadTotal();
+                }
+
+                function updateStockDetails() {
+                    const selectedOption = stockSelect.options[stockSelect.selectedIndex];
+                    if (stockSelect.value === '') {
+                        stockDetailsBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="px-4 py-2 text-sm text-gray-600 text-center">Seleccione un stock para ver los detalles</td>
+                            </tr>
+                        `;
+                    } else {
+                        stockDetailsBody.innerHTML = `
+                            <tr>
+                                <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.insumo}</td>
+                                <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.cantidad}</td>
+                                <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.unidad}</td>
+                                <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.vencimiento}</td>
+                            </tr>
+                        `;
+                    }
                 }
 
                 function updateCantidadTotal() {
                     const cantidades = document.querySelectorAll('.cantidad-unidad');
                     let total = 0;
                     cantidades.forEach(input => total += parseInt(input.value) || 0);
-                    cantidadTotalInput.value = total;
-
                     const selectedOption = stockSelect.options[stockSelect.selectedIndex];
-                    const stockDisponible = parseInt(selectedOption.dataset.cantidad);
+                    const unidad = stockSelect.value ? selectedOption.dataset.unidad : '';
+                    cantidadTotalInput.value = total;
+                    unidadTotalSpan.textContent = unidad;
+
+                    const stockDisponible = parseInt(selectedOption.dataset.cantidad) || 0;
                     if (tipoSelect.value === 'salida' && total > stockDisponible) {
                         Swal.fire({
                             icon: 'error',
@@ -100,6 +153,8 @@
                 }
 
                 addUnidadBtn.addEventListener('click', function () {
+                    const selectedOption = stockSelect.options[stockSelect.selectedIndex];
+                    const unidadMedida = selectedOption.dataset.unidad || '';
                     const row = document.createElement('div');
                     row.className = 'flex space-x-4 mb-2';
                     row.innerHTML = `
@@ -111,8 +166,9 @@
                                 ).join('')}
                             </select>
                         </div>
-                        <div class="w-1/4">
-                            <input type="number" name="cantidades[]" class="w-full px-4 py-2 border border-gray-300 rounded-lg cantidad-unidad focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" min="1" required>
+                        <div class="w-1/4 relative">
+                            <input type="number" name="cantidades[]" class="w-full px-4 py-2 border border-gray-300 rounded-lg cantidad-unidad focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-12" min="1" required>
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-700">${unidadMedida}</span>
                         </div>
                         <div class="w-1/6">
                             <button type="button" class="w-full px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition duration-200 remove-unidad">Eliminar</button>
@@ -136,6 +192,5 @@
 
         <!-- SweetAlert2 -->
         <script src="{{ asset('DataTables/sweetalert2.js') }}"></script>
-
     </div>
 @endsection

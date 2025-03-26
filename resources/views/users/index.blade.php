@@ -92,18 +92,17 @@
                             }
                         },
                         { 
-                            data: 'acciones', 
+                            data: null, 
                             name: 'acciones', 
                             orderable: false, 
                             searchable: false,
                             render: function(data, type, row) {
-                                console.log(row); // Para depuración
                                 return `
                                     <div class="flex space-x-2">
-                                        <a href="${row.acciones.edit_url}" class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition duration-200">
+                                        <a href="{{ url('users') }}/${row.id}/edit" class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition duration-200">
                                             Editar
                                         </a>
-                                        <form action="${row.acciones.delete_url}" method="POST" class="inline delete-form">
+                                        <form action="{{ url('users') }}/${row.id}" method="POST" class="inline delete-form">
                                             <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
                                             <input type="hidden" name="_method" value="DELETE">
                                             <button type="submit" class="px-3 py-1 bg-red-700 text-white text-sm rounded-lg hover:bg-red-800 transition duration-200">

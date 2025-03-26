@@ -43,8 +43,8 @@ class StocksController extends Controller
         $stock->fecha_de_vencimiento = $request->fecha_de_vencimiento;
         $stock->id_almacen = $request->id_almacen;
         $stock->id_proveedor = $request->id_proveedor; // Nuevo campo
-        $stock->estado = 'utilizable'; // Valor por defecto
-        $stock->cantidad_inicial = $request->cantidad; // Nota: Este campo no está en la migración
+        $stock->estado = ucfirst(strtolower('utilizable')); // Valor por defecto transformado
+        $stock->cantidad_inicial = $request->cantidad; // Nota: Este campo está en la migración actualizada
         $stock->save();
 
         return redirect()->route('stocks.index')->with('success', 'Stock creado exitosamente.');
@@ -76,7 +76,7 @@ class StocksController extends Controller
         $stock->fecha_de_vencimiento = $request->fecha_de_vencimiento;
         $stock->id_almacen = $request->id_almacen;
         $stock->id_proveedor = $request->id_proveedor; // Nuevo campo
-        $stock->estado = $request->estado;
+        $stock->estado = ucfirst(strtolower($request->estado)); // Transformar estado
         $stock->save();
 
         return redirect()->route('stocks.index')->with('success', 'Stock actualizado exitosamente.');

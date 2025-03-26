@@ -26,8 +26,8 @@
                 <div class="mb-6">
                     <label for="tipo" class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Movimiento</label>
                     <select name="tipo" id="tipo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                        <option value="entrada" {{ old('tipo', $movimiento->tipo) == 'entrada' ? 'selected' : '' }}>Entrada</option>
-                        <option value="salida" {{ old('tipo', $movimiento->tipo) == 'salida' ? 'selected' : '' }}>Salida</option>
+                        <option value="entrada" {{ old('tipo', $movimiento->tipo) == 'Entrada' ? 'selected' : '' }}>Entrada</option>
+                        <option value="salida" {{ old('tipo', $movimiento->tipo) == 'Salida' ? 'selected' : '' }}>Salida</option>
                     </select>
                 </div>
 
@@ -35,16 +35,42 @@
                     <label for="id_stock" class="block text-sm font-semibold text-gray-700 mb-2">Stock</label>
                     <select name="id_stock" id="id_stock" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
                         @foreach ($stocks as $stock)
-                            <option value="{{ $stock->id }}" {{ old('id_stock', $movimiento->id_stock) == $stock->id ? 'selected' : '' }}>
-                                {{ $stock->insumo->nombre }} ({{ $stock->cantidad }} {{ $stock->insumo->unidad_de_medida }}) - Almacén: {{ $stock->almacen->nombre }}
+                            <option value="{{ $stock->id }}" 
+                                    data-cantidad="{{ $stock->cantidad }}" 
+                                    data-insumo="{{ $stock->insumo->nombre }}" 
+                                    data-unidad="{{ $stock->insumo->unidad_de_medida }}" 
+                                    data-vencimiento="{{ $stock->fecha_de_vencimiento }}"
+                                    {{ old('id_stock', $movimiento->id_stock) == $stock->id ? 'selected' : '' }}>
+                                {{ $stock->insumo->nombre }} ({{ $stock->cantidad }} {{ $stock->insumo->unidad_de_medida }}) - Almacén: {{ $stock->almacen->nombre }} - Vence: {{ $stock->fecha_de_vencimiento }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
+                <!-- Mini tabla para mostrar detalles del stock seleccionado -->
+                <div class="mb-6" id="stockDetails">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Detalles del Stock Seleccionado</label>
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Insumo</th>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Cantidad Actual</th>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Unidad de Medida</th>
+                                <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700">Fecha de Vencimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockDetailsBody" class="bg-gray-50">
+                            <!-- Se llenará dinámicamente con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
                 <div class="mb-6">
                     <label for="cantidad" class="block text-sm font-semibold text-gray-700 mb-2">Cantidad</label>
-                    <input type="number" name="cantidad" id="cantidad" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" value="{{ old('cantidad', $movimiento->cantidad) }}" min="1" required>
+                    <div class="relative">
+                        <input type="number" name="cantidad" id="cantidad" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-12" value="{{ old('cantidad', $movimiento->cantidad) }}" min="1" required>
+                        <span id="unidad_cantidad" class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-700"></span>
+                    </div>
                 </div>
 
                 <div class="mb-6">
@@ -72,27 +98,63 @@
     </div>
 
     <!-- SweetAlert2 -->
-   
     <script src="{{ asset('DataTables/sweetalert2.js') }}"></script>
 
     <script>
-        document.querySelector('.update-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const form = this;
+        document.addEventListener('DOMContentLoaded', function () {
+            const tipoSelect = document.getElementById('tipo');
+            const stockSelect = document.getElementById('id_stock');
+            const unidadCantidadSpan = document.getElementById('unidad_cantidad');
+            const stockDetailsBody = document.getElementById('stockDetailsBody');
 
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: '¿Quieres actualizar los datos de este movimiento?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, actualizar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
+            function updateFormState() {
+                const selectedOption = stockSelect.options[stockSelect.selectedIndex];
+                const unidad = selectedOption ? selectedOption.dataset.unidad : '';
+                unidadCantidadSpan.textContent = unidad;
+                updateStockDetails();
+            }
+
+            function updateStockDetails() {
+                const selectedOption = stockSelect.options[stockSelect.selectedIndex];
+                if (!selectedOption || !selectedOption.dataset.insumo) {
+                    stockDetailsBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="px-4 py-2 text-sm text-gray-600 text-center">Seleccione un stock para ver los detalles</td>
+                        </tr>
+                    `;
+                } else {
+                    stockDetailsBody.innerHTML = `
+                        <tr>
+                            <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.insumo}</td>
+                            <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.cantidad}</td>
+                            <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.unidad}</td>
+                            <td class="px-4 py-2 text-sm text-gray-800 border-t border-gray-200">${selectedOption.dataset.vencimiento}</td>
+                        </tr>
+                    `;
                 }
+            }
+
+            stockSelect.addEventListener('change', updateFormState);
+            updateFormState(); // Llamar al cargar la página para mostrar los datos iniciales
+
+            document.querySelector('.update-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: '¿Quieres actualizar los datos de este movimiento?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, actualizar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
         });
     </script>

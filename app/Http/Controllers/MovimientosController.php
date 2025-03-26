@@ -4,95 +4,65 @@ namespace App\Http\Controllers;
 
 use App\Models\Movimiento;
 use App\Models\Stock;
-use App\Models\unidades_de_produccion;
+use App\Models\StockHistory;
+use App\Models\unidades_de_produccion; // Corregido el nombre del modelo
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\DataTables;
 
 class MovimientosController extends Controller
 {
-    // Mostrar lista de movimientos
+    // Método index para DataTables
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            try {
-                $query = Movimiento::with([
-                    'stock.insumo' => function ($q) {
-                        $q->select('id', 'nombre', 'unidad_de_medida');
-                    },
-                    'stock.almacen' => function ($q) {
-                        $q->select('id', 'nombre');
-                    },
-                    'unidadDeProduccion' => function ($q) {
-                        $q->select('id', 'nombre');
-                    },
-                    'user' => function ($q) {
-                        $q->select('id', 'name');
-                    }
-                ])
-                ->select('id', 'tipo', 'id_stock', 'cantidad', 'id_unidad_de_produccion', 'id_user', 'created_at');
-
-                return DataTables::of($query)
-                    ->addColumn('insumo_nombre', function (Movimiento $movimiento) {
-                        return $movimiento->stock->insumo->nombre ?? 'N/A';
-                    })
-                    ->addColumn('cantidad_unidad', function (Movimiento $movimiento) {
-                        return $movimiento->cantidad . ' ' . ($movimiento->stock->insumo->unidad_de_medida ?? '');
-                    })
-                    ->addColumn('almacen_nombre', function (Movimiento $movimiento) {
-                        return $movimiento->stock->almacen->nombre ?? 'N/A';
-                    })
-                    ->addColumn('unidad_produccion_nombre', function (Movimiento $movimiento) {
-                        return $movimiento->unidadDeProduccion->nombre ?? 'N/A';
-                    })
-                    ->addColumn('usuario_nombre', function (Movimiento $movimiento) {
-                        return $movimiento->user->name ?? 'Desconocido';
-                    })
-                    ->editColumn('created_at', function (Movimiento $movimiento) {
-                        return $movimiento->created_at->format('d/m/Y H:i');
-                    })
-                    ->addColumn('acciones', function (Movimiento $movimiento) {
-                        return '
-                            <a href="' . route('movimientos.edit', $movimiento->id) . '" class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition duration-200">
-                                Editar
-                            </a>
-                            <form action="' . route('movimientos.destroy', $movimiento->id) . '" method="POST" class="inline delete-form">
-                                ' . csrf_field() . '
-                                ' . method_field('DELETE') . '
-                                <button type="submit" class="ml-2 inline-block px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition duration-200">
-                                    Eliminar
-                                </button>
-                            </form>';
-                    })
-                    ->rawColumns(['acciones'])
-                    ->make(true);
-            } catch (\Exception $e) {
-              echo "xd";
-            }
+            $movimientos = Movimiento::with(['stock.insumo', 'stock.almacen', 'unidadDeProduccion', 'user'])
+                ->select('movimientos.*');
+    
+            return DataTables::of($movimientos)
+                ->addColumn('insumo_nombre', function ($movimiento) {
+                    return $movimiento->stock->insumo->nombre;
+                })
+                ->addColumn('cantidad_unidad', function ($movimiento) {
+                    return $movimiento->cantidad . ' ' . $movimiento->stock->insumo->unidad_de_medida;
+                })
+                ->addColumn('almacen_nombre', function ($movimiento) {
+                    return $movimiento->stock->almacen->nombre;
+                })
+                ->addColumn('unidad_produccion_nombre', function ($movimiento) {
+                    return $movimiento->unidadDeProduccion ? $movimiento->unidadDeProduccion->nombre : 'N/A';
+                })
+                ->addColumn('usuario_nombre', function ($movimiento) {
+                    return $movimiento->user->name;
+                })
+                ->addColumn('acciones', function ($movimiento) {
+                    return [
+                        'edit_url' => route('movimientos.edit', $movimiento->id),
+                        'delete_url' => route('movimientos.destroy', $movimiento->id),
+                    ];
+                })
+                ->make(true);
         }
-
+    
         return view('movimientos.index');
     }
 
     public function create()
     {
-        $stocks = Stock::with('insumo', 'almacen')->where('estado', 'utilizable')->get();
-        $unidades = unidades_de_produccion::all();
+        $stocks = Stock::with(['insumo', 'almacen', 'proveedor'])->where('estado', 'utilizable')->get();
+        $unidades = unidades_de_produccion::all(); // Corregido el nombre del modelo
         return view('movimientos.create', compact('stocks', 'unidades'));
     }
 
-
-   
-
-    // Guardar un nuevo movimiento
     public function store(Request $request)
     {
         $request->validate([
             'tipo' => 'required|in:entrada,salida',
             'id_stock' => 'required|exists:stocks,id',
-            'unidades' => 'required_if:tipo,salida|array', // Requerido solo para salidas
+            'unidades' => 'required_if:tipo,salida|array',
             'unidades.*' => 'exists:unidades_de_produccion,id',
-            'cantidades' => 'required_if:tipo,salida|array', // Requerido solo para salidas
+            'cantidades' => 'required_if:tipo,salida|array',
             'cantidades.*' => 'integer|min:1',
         ]);
 
@@ -109,15 +79,14 @@ class MovimientosController extends Controller
             }
             $stock->cantidad -= $totalCantidad;
         } else { // Entrada
-            $totalCantidad = array_sum($cantidades ?: [0]); // Si no hay cantidades, usar 0
+            $totalCantidad = array_sum($cantidades ?: [0]);
             $stock->cantidad += $totalCantidad;
         }
 
-        // Actualizar estado del stock
         $stock->estado = $stock->cantidad > 0 ? 'utilizable' : 'caducado';
         $stock->save();
 
-        // Crear movimientos solo si hay unidades seleccionadas (para salidas)
+        // Crear movimientos
         if ($tipo === 'salida' && !empty($unidades)) {
             foreach ($unidades as $index => $unidadId) {
                 $movimiento = new Movimiento();
@@ -128,20 +97,21 @@ class MovimientosController extends Controller
                 $movimiento->id_unidad_de_produccion = $unidadId;
                 $movimiento->save();
             }
-        } else { // Para entradas, un solo movimiento sin unidad (o con una si se especifica)
+        } else {
             $movimiento = new Movimiento();
             $movimiento->id_user = Auth::id();
             $movimiento->tipo = $tipo;
             $movimiento->id_stock = $request->id_stock;
-            $movimiento->cantidad = $totalCantidad ?: $request->input('cantidades.0', 0); // Usar primera cantidad si existe
-            $movimiento->id_unidad_de_produccion = null; // No se usa para entradas generalmente
+            $movimiento->cantidad = $totalCantidad ?: $request->input('cantidades.0', 0);
+            $movimiento->id_unidad_de_produccion = null;
             $movimiento->save();
         }
+
+       
 
         return redirect()->route('movimientos.index')->with('success', 'Movimientos registrados exitosamente.');
     }
 
-    // Show the form to edit an existing movimiento
     public function edit($id)
     {
         $movimiento = Movimiento::with(['stock.insumo', 'stock.almacen', 'unidadDeProduccion'])->findOrFail($id);
@@ -150,7 +120,6 @@ class MovimientosController extends Controller
         return view('movimientos.edit', compact('movimiento', 'stocks', 'unidades'));
     }
 
-    // Update an existing movimiento
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -164,7 +133,7 @@ class MovimientosController extends Controller
         $oldStock = Stock::findOrFail($movimiento->id_stock);
         $newStock = Stock::findOrFail($request->id_stock);
 
-        // Revert the old stock change
+        // Revertir el stock anterior
         if ($movimiento->tipo === 'salida') {
             $oldStock->cantidad += $movimiento->cantidad;
         } elseif ($movimiento->tipo === 'entrada') {
@@ -172,8 +141,9 @@ class MovimientosController extends Controller
         }
         $oldStock->estado = $oldStock->cantidad > 0 ? 'utilizable' : 'caducado';
         $oldStock->save();
+        $this->recordStockHistory($oldStock);
 
-        // Apply the new stock change
+        // Aplicar al nuevo stock
         if ($request->tipo === 'salida') {
             if ($newStock->cantidad < $request->cantidad) {
                 return back()->withErrors(['cantidad' => 'La cantidad solicitada excede el stock disponible.']);
@@ -184,8 +154,9 @@ class MovimientosController extends Controller
         }
         $newStock->estado = $newStock->cantidad > 0 ? 'utilizable' : 'caducado';
         $newStock->save();
+        $this->recordStockHistory($newStock);
 
-        // Update the movimiento
+        // Actualizar el movimiento
         $movimiento->tipo = $request->tipo;
         $movimiento->id_stock = $request->id_stock;
         $movimiento->cantidad = $request->cantidad;
@@ -195,13 +166,12 @@ class MovimientosController extends Controller
         return redirect()->route('movimientos.index')->with('success', 'Movimiento actualizado exitosamente.');
     }
 
-    // Delete a movimiento
     public function destroy($id)
     {
         $movimiento = Movimiento::findOrFail($id);
         $stock = Stock::findOrFail($movimiento->id_stock);
 
-        // Revert the stock change before deletion
+        // Revertir el stock
         if ($movimiento->tipo === 'salida') {
             $stock->cantidad += $movimiento->cantidad;
         } elseif ($movimiento->tipo === 'entrada') {
@@ -209,6 +179,7 @@ class MovimientosController extends Controller
         }
         $stock->estado = $stock->cantidad > 0 ? 'utilizable' : 'caducado';
         $stock->save();
+    
 
         $movimiento->delete();
 

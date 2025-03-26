@@ -20,43 +20,44 @@ class AlmacenesController extends Controller
         return view('almacenes.create');
     }
 
-    // Store a new almacen
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-        ]);
+   // Store a new almacen
+   public function store(Request $request)
+   {
+       $request->validate([
+           'nombre' => 'required|string|max:255',
+           'descripcion' => 'nullable|string',
+       ]);
 
-        $almacen = new Almacen();
-        $almacen->nombre = $request->nombre;
-        $almacen->descripcion = $request->descripcion;
-        $almacen->save();
+       $almacen = new Almacen();
+       $almacen->nombre = ucfirst(strtolower($request->nombre));
+       $almacen->descripcion = $request->descripcion ? ucfirst(strtolower($request->descripcion)) : null;
+       $almacen->save();
 
-        return redirect()->route('almacenes.index')->with('success', 'Almacén creado exitosamente.');
-    }
+       return redirect()->route('almacenes.index')->with('success', 'Almacén creado exitosamente.');
+   }
 
-    public function edit($id)
-    {
-        $almacen = Almacen::findOrFail($id);
-        return view('almacenes.edit', compact('almacen'));
-    }
+   // Show the form to edit an existing almacen
+   public function edit($id)
+   {
+       $almacen = Almacen::findOrFail($id);
+       return view('almacenes.edit', compact('almacen'));
+   }
 
-    // Update an existing almacen
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-        ]);
+   // Update an existing almacen
+   public function update(Request $request, $id)
+   {
+       $request->validate([
+           'nombre' => 'required|string|max:255',
+           'descripcion' => 'nullable|string',
+       ]);
 
-        $almacen = Almacen::findOrFail($id);
-        $almacen->nombre = $request->nombre;
-        $almacen->descripcion = $request->descripcion;
-        $almacen->save();
+       $almacen = Almacen::findOrFail($id);
+       $almacen->nombre = ucfirst(strtolower($request->nombre));
+       $almacen->descripcion = $request->descripcion ? ucfirst(strtolower($request->descripcion)) : null;
+       $almacen->save();
 
-        return redirect()->route('almacenes.index')->with('success', 'Almacén actualizado exitosamente.');
-    }
+       return redirect()->route('almacenes.index')->with('success', 'Almacén actualizado exitosamente.');
+   }
 
     // Delete an almacen
     public function destroy($id)

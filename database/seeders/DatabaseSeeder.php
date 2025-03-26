@@ -18,10 +18,10 @@ class DatabaseSeeder extends Seeder
             InsumosTableSeeder::class,
             AlmacenesTableSeeder::class,
             ProveedoresTableSeeder::class,
-            StocksTableSeeder::class,
+            // StocksTableSeeder::class,
             UnidadesDeProduccionTableSeeder::class,
-            MovimientosTableSeeder::class,
-            InsumoUnidadDeProduccionTableSeeder::class,
+            // MovimientosTableSeeder::class,
+            // InsumoUnidadDeProduccionTableSeeder::class,
         ]);
     }
 }

@@ -29,8 +29,8 @@ class UnidadesDeProduccionController extends Controller
         ]);
 
         $unidad = new unidades_de_produccion();
-        $unidad->nombre = $request->nombre;
-        $unidad->descripcion = $request->descripcion;
+        $unidad->nombre = ucfirst(strtolower($request->nombre));
+        $unidad->descripcion = $request->descripcion ? ucfirst(strtolower($request->descripcion)) : null;
         $unidad->save();
 
         return redirect()->route('unidades_de_produccion.index')->with('success', 'Unidad de producción creada exitosamente.');
@@ -52,8 +52,8 @@ class UnidadesDeProduccionController extends Controller
         ]);
 
         $unidad = unidades_de_produccion::findOrFail($id);
-        $unidad->nombre = $request->nombre;
-        $unidad->descripcion = $request->descripcion;
+        $unidad->nombre = ucfirst(strtolower($request->nombre));
+        $unidad->descripcion = $request->descripcion ? ucfirst(strtolower($request->descripcion)) : null;
         $unidad->save();
 
         return redirect()->route('unidades_de_produccion.index')->with('success', 'Unidad de producción actualizada exitosamente.');

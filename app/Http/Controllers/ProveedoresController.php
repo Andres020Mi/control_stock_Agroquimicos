@@ -47,45 +47,60 @@ class ProveedoresController extends Controller
     {
         return view('proveedores.create');
     }
+// Almacenar un nuevo proveedor
+public function store(Request $request)
+{
+    $request->validate([
+        'nombre' => 'required|string|max:255',
+        'nit' => 'nullable|string|max:20|unique:proveedores,nit',
+        'telefono' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255|unique:proveedores,email',
+        'direccion' => 'nullable|string|max:500',
+    ]);
 
-    // Almacenar un nuevo proveedor
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'nit' => 'nullable|string|max:20|unique:proveedores,nit',
-            'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255|unique:proveedores,email',
-            'direccion' => 'nullable|string|max:500',
-        ]);
+    $data = [
+        'nombre' => ucfirst(strtolower($request->nombre)),
+        'nit' => $request->nit ? ucfirst(strtolower($request->nit)) : null,
+        'telefono' => $request->telefono ? ucfirst(strtolower($request->telefono)) : null,
+        'email' => $request->email ? strtolower($request->email) : null, // Email en minúsculas completamente
+        'direccion' => $request->direccion ? ucfirst(strtolower($request->direccion)) : null,
+    ];
 
-        Proveedor::create($request->all());
+    Proveedor::create($data);
 
-        return redirect()->route('proveedores.index')->with('success', 'Proveedor creado correctamente.');
-    }
+    return redirect()->route('proveedores.index')->with('success', 'Proveedor creado correctamente.');
+}
 
-    // Mostrar formulario para editar un proveedor
-    public function edit(Proveedor $proveedor)
-    {
-        return view('proveedores.edit', compact('proveedor'));
-    }
+// Mostrar formulario para editar un proveedor
+public function edit(Proveedor $proveedor)
+{
+    return view('proveedores.edit', compact('proveedor'));
+}
 
-    // Actualizar un proveedor
-    public function update(Request $request, Proveedor $proveedor)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'nit' => 'nullable|string|max:20|unique:proveedores,nit,' . $proveedor->id,
-            'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255|unique:proveedores,email,' . $proveedor->id,
-            'direccion' => 'nullable|string|max:500',
-        ]);
+// Actualizar un proveedor
+public function update(Request $request, Proveedor $proveedor)
+{
+    $request->validate([
+        'nombre' => 'required|string|max:255',
+        'nit' => 'nullable|string|max:20|unique:proveedores,nit,' . $proveedor->id,
+        'telefono' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255|unique:proveedores,email,' . $proveedor->id,
+        'direccion' => 'nullable|string|max:500',
+    ]);
 
-        $proveedor->update($request->all());
+    $data = [
+        'nombre' => ucfirst(strtolower($request->nombre)),
+        'nit' => $request->nit ? ucfirst(strtolower($request->nit)) : null,
+        'telefono' => $request->telefono ? ucfirst(strtolower($request->telefono)) : null,
+        'email' => $request->email ? strtolower($request->email) : null, // Email en minúsculas completamente
+        'direccion' => $request->direccion ? ucfirst(strtolower($request->direccion)) : null,
+    ];
 
-        return redirect()->route('proveedores.index')->with('success', 'Proveedor actualizado correctamente.');
-    }
+    $proveedor->update($data);
 
+    return redirect()->route('proveedores.index')->with('success', 'Proveedor actualizado correctamente.');
+}
+  
     // Eliminar un proveedor
     public function destroy(Proveedor $proveedor)
     {
