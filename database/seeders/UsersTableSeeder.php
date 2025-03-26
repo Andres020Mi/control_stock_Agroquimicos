@@ -33,5 +33,12 @@ class UsersTableSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'instructor',
         ]);
+
+        User::create([
+            'name' => 'Lider de la unidad',
+            'email' => 'liderUnidad@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'lider de la unidad',
+        ]);
     }
 }

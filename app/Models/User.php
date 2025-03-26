@@ -56,4 +56,18 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+
+    // Relación: Un usuario puede ser líder de varias unidades
+    public function liderUnidades()
+    {
+        return $this->belongsToMany(UnidadDeProduccion::class, 'lideres_unidades', 'user_id', 'unidad_de_produccion_id')
+                    ->withTimestamps();
+    }
+
+    // Método para verificar si el usuario es líder de una unidad específica
+    public function esLiderDeUnidad($unidadId)
+    {
+        return $this->liderUnidades()->where('unidad_de_produccion_id', $unidadId)->exists();
+    }
 }

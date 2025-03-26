@@ -8,12 +8,15 @@ use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
-    /**
-     * Maneja la petición entrante.
-     */
-    public function handle(Request $request, Closure $next, string $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (!Auth::check() || Auth::user()->role !== $role) {
+        if (!Auth::check()) {
+            return redirect()->route('login'); // Redirige al login si no está autenticado
+        }
+
+        $userRole = Auth::user()->role;
+
+        if (!in_array($userRole, $roles)) {
             abort(403, 'No tienes permisos para acceder a esta ruta.');
         }
 

@@ -43,9 +43,9 @@
             <div class="mb-4">
                 <label for="role" class="block text-sm font-medium text-gray-700">Rol</label>
                 <select name="role" id="role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 @error('role') border-red-500 @enderror">
-                    <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="aprendiz" {{ old('role', $user->role) == 'aprendiz' ? 'selected' : '' }}>Aprendiz</option>
                     <option value="instructor" {{ old('role', $user->role) == 'instructor' ? 'selected' : '' }}>Instructor</option>
+                    <option value="lider de la unidad" {{ old('role', $user->role) == 'lider de la unidad' ? 'selected' : '' }}>Lider de unidad</option>
                 </select>
                 @error('role')
                     <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -53,7 +53,7 @@
             </div>
 
             <div class="flex justify-end">
-                <button type="submit" class="px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
+                <button type="submit" class="px-6 py-3 bg-green-700 textlider de la unidad-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
                     Actualizar
                 </button>
             </div>

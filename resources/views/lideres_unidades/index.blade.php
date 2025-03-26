@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('header')
-    Usuarios
+    Líderes de Unidades
 @endsection
 
 @section('content')
     <div class="container mx-auto py-8">
-        <h1 class="text-3xl font-bold text-green-800 mb-6">Listado de Usuarios</h1>
+        <h1 class="text-3xl font-bold text-green-800 mb-6">Listado de Líderes de Unidades</h1>
 
         @if (session('success'))
             <div class="mb-6 p-4 bg-green-100 border-l-4 border-green-600 text-green-800 rounded-r-lg shadow-md">
@@ -15,8 +15,8 @@
         @endif
 
         <div class="mb-6">
-            <a href="{{ route('users.create') }}" class="inline-block px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
-                Crear Nuevo Usuario
+            <a href="{{ route('lideres_unidades.create') }}" class="inline-block px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
+                Asignar Líder a Unidad
             </a>
         </div>
 
@@ -27,8 +27,7 @@
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">ID</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Nombre</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Email</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Rol</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Fecha Creación</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Unidades Asignadas</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold uppercase">Acciones</th>
                     </tr>
                 </thead>
@@ -61,7 +60,7 @@
                     processing: true,
                     serverSide: true,
                     ajax: {
-                        url: '{{ route('users.index') }}',
+                        url: '{{ route('lideres_unidades.index') }}',
                         error: function(xhr, error, thrown) {
                             console.log('Error en la solicitud AJAX:', xhr.responseText);
                             alert('Error al cargar los datos: ' + xhr.status + ' ' + xhr.statusText);
@@ -71,56 +70,20 @@
                         { data: 'id', name: 'id' },
                         { data: 'name', name: 'name' },
                         { data: 'email', name: 'email' },
+                        { data: 'unidades', name: 'unidades' },
                         { 
-                            data: 'role', 
-                            name: 'role', 
-                            render: function(data) { 
-                                return data.charAt(0).toUpperCase() + data.slice(1); 
-                            } 
-                        },
-                        { 
-                            data: 'created_at', 
-                            name: 'created_at',
-                            render: function(data) {
-                                var date = new Date(data);
-                                return date.getDate().toString().padStart(2, '0') + '-' + 
-                                       (date.getMonth() + 1).toString().padStart(2, '0') + '-' + 
-                                       date.getFullYear() + ' ' + 
-                                       date.getHours().toString().padStart(2, '0') + ':' + 
-                                       date.getMinutes().toString().padStart(2, '0') + ':' + 
-                                       date.getSeconds().toString().padStart(2, '0');
-                            }
-                        },
-                        { 
-                            data: 'acciones', 
+                            data: null, 
                             name: 'acciones', 
                             orderable: false, 
                             searchable: false,
                             render: function(data, type, row) {
-                                // Verificar si el usuario tiene permiso para editar/eliminar directamente
-                                var canEditDirectly = false;
-                                @if (in_array(auth()->user()->role, ['admin', 'instructor']))
-                                    canEditDirectly = true;
-                                @endif
-
-                                if (canEditDirectly && data && data.edit_url && data.delete_url) {
-                                    return `
-                                        <div class="flex space-x-2">
-                                            <a href="${data.edit_url}" class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition duration-200">
-                                                Editar
-                                            </a>
-                                            <form action="${data.delete_url}" method="POST" class="inline delete-form">
-                                                <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
-                                                <input type="hidden" name="_method" value="DELETE">
-                                                <button type="submit" class="px-3 py-1 bg-red-700 text-white text-sm rounded-lg hover:bg-red-800 transition duration-200">
-                                                    Eliminar
-                                                </button>
-                                            </form>
-                                        </div>
-                                    `;
-                                } else {
-                                    return 'Sin permisos';
-                                }
+                                return `
+                                    <div class="flex space-x-2">
+                                        <a href="{{ route('lideres_unidades.edit', ':id') }}".replace(':id', row.id) class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition duration-200">
+                                            Editar
+                                        </a>
+                                    </div>
+                                `;
                             }
                         }
                     ],
@@ -150,29 +113,8 @@
                     responsive: true,
                     order: [[0, 'desc']],
                     columnDefs: [
-                        { targets: 5, orderable: false, searchable: false, width: '150px' }
+                        { targets: 4, orderable: false, searchable: false, width: '150px' }
                     ]
-                });
-
-                // SweetAlert2 para confirmación de eliminación
-                $(document).on('click', '.delete-form button', function(e) {
-                    e.preventDefault();
-                    const form = $(this).closest('form');
-
-                    Swal.fire({
-                        title: '¿Estás seguro?',
-                        text: '¿Quieres eliminar este usuario? Esta acción no se puede deshacer.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
                 });
             });
         </script>

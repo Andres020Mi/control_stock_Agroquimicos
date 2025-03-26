@@ -9,6 +9,7 @@
                         <x-jet-application-mark class="block h-9 w-auto" />
                     </a>
                 </div>
+                
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
@@ -17,100 +18,92 @@
                     </x-jet-nav-link>
                 </div>
 
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex" >
-                    <x-jet-nav-link href="{{ route('insumos.index') }}" :active="request()->routeIs('insumos.index')" style="font-size: 18px;">
-                        Insumos
-                    </x-jet-nav-link>
-                </div>
-                @endif
 
+               {{-- Rutas para administrador --}}
+@if(Auth::user()->role == "admin" or Auth::user()->role == "instructor" )
+<div class="hidden sm:flex sm:items-center sm:space-x-8 sm:-my-px sm:ml-10">
+    <x-jet-nav-link href="{{ route('solicitudes_movimientos.index') }}" :active="request()->routeIs('solicitudes_movimientos.index')" class="text-lg">
+        Solicitudes de movimientos
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('lideres_unidades.index') }}" :active="request()->routeIs('lideres_unidades.index')" class="text-lg">
+        Gestionar lideres de unidades
+    </x-jet-nav-link>
+
+    
+
+    <x-jet-nav-link href="{{ route('insumos.index') }}" :active="request()->routeIs('insumos.index')" class="text-lg">
+        Insumos
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('stocks.index') }}" :active="request()->routeIs('stocks.index')" class="text-lg">
+        Stock
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('movimientos.index') }}" :active="request()->routeIs('movimientos.index')" class="text-lg">
+        Movimientos
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('unidades_de_produccion.index') }}" :active="request()->routeIs('unidades_de_produccion.index')" class="text-lg">
+        Unidades de Producción
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('almacenes.index') }}" :active="request()->routeIs('almacenes.index')" class="text-lg">
+        Almacenes
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('proveedores.index') }}" :active="request()->routeIs('proveedores.index')" class="text-lg">
+        Proveedores
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')" class="text-lg">
+        Administrar usuarios
+    </x-jet-nav-link>
+</div>
+@endif
+
+
+
+
+{{-- Rutas de el instructor --}}
+@if(Auth::user()->role == "aprendiz" or Auth::user()->role == "lider de la unidad")
+<div class="hidden sm:flex sm:items-center sm:space-x-8 sm:-my-px sm:ml-10">
+   
+
+    <x-jet-nav-link href="{{ route('insumos.index') }}" :active="request()->routeIs('insumos.index')" class="text-lg">
+        Insumos
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('stocks.index') }}" :active="request()->routeIs('stocks.index')" class="text-lg">
+        Stock
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('movimientos.index') }}" :active="request()->routeIs('movimientos.index')" class="text-lg">
+        Movimientos
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('unidades_de_produccion.index') }}" :active="request()->routeIs('unidades_de_produccion.index')" class="text-lg">
+        Unidades de Producción
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('almacenes.index') }}" :active="request()->routeIs('almacenes.index')" class="text-lg">
+        Almacenes
+    </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('proveedores.index') }}" :active="request()->routeIs('proveedores.index')" class="text-lg">
+        Proveedores
+    </x-jet-nav-link>
+
+   
+</div>
+@endif
 
                 
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('stocks.index') }}" :active="request()->routeIs('stocks.index')" style="font-size: 18px;">
-                        Stock
-                    </x-jet-nav-link>
-                </div>
-                @endif
-
-             
-
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('movimientos.index') }}" :active="request()->routeIs('movimientos.index')" style="font-size: 18px;">
-                        Movimientos
-                    </x-jet-nav-link>
-                </div>
-                @endif
 
                 
-
-                
-                
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('unidades_de_produccion.index') }}" :active="request()->routeIs('unidades_de_produccion.index')" style="font-size: 18px;">
-                        Unidades de Producción
-                    </x-jet-nav-link>
-                </div>
-                @endif
-
-
-                      
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('almacenes.index') }}" :active="request()->routeIs('almacenes.index')" style="font-size: 18px;">
-                        Almacenes
-                    </x-jet-nav-link>
-                </div>
-                @endif
-
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('proveedores.index') }}" :active="request()->routeIs('proveedores.index')" style="font-size: 18px;">
-                        Provedores
-                    </x-jet-nav-link>
-                </div>
-                @endif
                
 
-                @if(Auth::user()->role == "admin")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')" style="font-size: 18px;">
-                        Administrar usuarios
-                    </x-jet-nav-link>
-                </div>
-                @endif
-
-                @if(Auth::user()->role == "aprendiz")
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        user
-                    </x-jet-nav-link>
-                </div>
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        user
-                    </x-jet-nav-link>
-                </div>
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        user
-                    </x-jet-nav-link>
-                </div>
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        user
-                    </x-jet-nav-link>
-                </div>
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        user
-                    </x-jet-nav-link>
-                </div>
-                @endif
+               
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ml-6">

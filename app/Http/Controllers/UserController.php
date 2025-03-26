@@ -13,9 +13,25 @@ class UserController extends Controller
     {
         if ($request->ajax()) {
             $users = User::select(['id', 'name', 'email', 'role', 'created_at']);
-            return DataTables::of($users)->make(true);
+    
+            return DataTables::of($users)
+                ->addColumn('acciones', function ($user) {
+                    $currentUser = auth()->user();
+                    if (in_array($currentUser->role, ['admin', 'instructor'])) {
+                        return [
+                            'edit_url' => route('users.edit', $user->id),
+                            'delete_url' => route('users.destroy', $user->id),
+                        ];
+                    } else {
+                        return [
+                            'edit_url' => '#', // O una URL vacía para evitar errores
+                            'delete_url' => '#',
+                        ];
+                    }
+                })
+                ->make(true);
         }
-
+    
         return view('users.index');
     }
 
@@ -30,7 +46,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,aprendiz,instructor',
+            'role' => 'required|in:admin,aprendiz,instructor,lider de la unidad',
         ]);
 
         User::create([
@@ -54,7 +70,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,aprendiz,instructor',
+            'role' => 'required|in:admin,aprendiz,instructor,lider de la unidad',
         ]);
     
         $data = [

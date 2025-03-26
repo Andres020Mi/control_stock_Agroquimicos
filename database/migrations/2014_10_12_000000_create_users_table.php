@@ -22,7 +22,7 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->text('profile_photo_path')->nullable();
-            $table->enum('role',['admin','aprendiz','instructor'])->default('aprendiz');
+            $table->enum('role',['admin','lider de la unidad','aprendiz','instructor'])->default('aprendiz');
             $table->timestamps();
         });
     }
