@@ -59,6 +59,10 @@
     <x-jet-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.index')" class="text-lg">
         Administrar usuarios
     </x-jet-nav-link>
+
+    <x-jet-nav-link href="{{ route('solicitudes_movimientos.mis_solicitudes') }}" :active="request()->routeIs('solicitudes_movimientos.mis_solicitudes')" class="text-lg">
+        Mis solicitudes sobre movimientos
+    </x-jet-nav-link>
 </div>
 @endif
 
@@ -94,6 +98,10 @@
         Proveedores
     </x-jet-nav-link>
 
+    <x-jet-nav-link href="{{ route('solicitudes_movimientos.mis_solicitudes') }}" :active="request()->routeIs('solicitudes_movimientos.mis_solicitudes')" class="text-lg">
+        Mis solicitudes sobre movimientos
+    </x-jet-nav-link>
+    
    
 </div>
 @endif

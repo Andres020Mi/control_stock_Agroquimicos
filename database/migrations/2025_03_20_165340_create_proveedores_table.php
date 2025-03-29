@@ -11,9 +11,9 @@ class CreateProveedoresTable extends Migration
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('nit')->unique()->nullable(); // Identificador fiscal, único pero opcional
+            $table->string('nit')->nullable(); // Identificador fiscal, único pero opcional
             $table->string('telefono')->nullable();
-            $table->string('email')->unique()->nullable();
+            $table->string('email')->nullable();
             $table->text('direccion')->nullable();
             $table->timestamps();
         });

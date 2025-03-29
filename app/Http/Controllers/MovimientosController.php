@@ -59,7 +59,7 @@ class MovimientosController extends Controller
                         ];
                     } else {
                         return [
-                            'edit_url' => route('movimientos.solicitarEdicion', $movimiento->id),
+                            'edit_url' => route('movimientos.mostrarSolicitarEdicion', $movimiento->id),
                             'delete_url' => route('movimientos.solicitarEliminacion', $movimiento->id),
                         ];
                     }
@@ -73,8 +73,17 @@ class MovimientosController extends Controller
     public function create()
     {
         $stocks = Stock::with(['insumo', 'almacen', 'proveedor'])->where('estado', 'utilizable')->get();
-        $unidades = unidades_de_produccion::all();
-
+    
+        $user = auth()->user();
+    
+        // Si el usuario es admin o instructor, mostrar todas las unidades
+        if (in_array($user->role, ['admin', 'instructor'])) {
+            $unidades = unidades_de_produccion::all();
+        } else {
+            // Si el usuario es líder de unidad, mostrar solo las unidades que lidera
+            $unidades = $user->liderUnidades;
+        }
+    
         return view('movimientos.create', compact('stocks', 'unidades'));
     }
 
@@ -135,7 +144,7 @@ class MovimientosController extends Controller
 
     public function edit($id)
     {
-        $movimiento = Movimiento::with(['stock.insumo', 'stock.almacen', 'unidades_de_produccion'])->findOrFail($id);
+        $movimiento = Movimiento::with(['stock.insumo', 'stock.almacen', 'unidadDeProduccion'])->findOrFail($id);
         $this->authorizeMovimiento($movimiento);
         $stocks = Stock::with('insumo', 'almacen')->where('estado', 'utilizable')->get();
         $unidades = unidades_de_produccion::all();
@@ -210,40 +219,86 @@ class MovimientosController extends Controller
         return redirect()->route('movimientos.index')->with('success', 'Movimiento eliminado exitosamente.');
     }
 
-    public function solicitarEdicion(Request $request, $id)
-    {
-        $movimiento = Movimiento::findOrFail($id);
-        $user = auth()->user();
+    public function mostrarFormularioEdicion($id)
+{
+    $movimiento = Movimiento::findOrFail($id);
+    $user = Auth::user();
 
-        if ($user->role === 'lider de la unidad') {
-            $unidadId = $movimiento->id_unidad_de_produccion;
-            if (!$unidadId || !$user->liderUnidades->contains($unidadId)) {
-                abort(403, 'No tienes permisos para solicitar cambios en este movimiento.');
-            }
+    // Verificar permisos del líder de unidad
+    if ($user->role === 'lider de la unidad') {
+        $unidadId = $movimiento->id_unidad_de_produccion;
+        if (!$unidadId || !$user->liderUnidades->contains($unidadId)) {
+            abort(403, 'No tienes permisos para solicitar cambios en este movimiento.');
         }
-
-        $request->validate([
-            'tipo' => 'required|in:entrada,salida',
-            'id_stock' => 'required|exists:stocks,id',
-            'cantidad' => 'required|integer|min:1',
-            'id_unidad_de_produccion' => 'nullable|exists:unidades_de_produccion,id',
-        ]);
-
-        SolicitudMovimiento::create([
-            'user_id' => $user->id,
-            'movimiento_id' => $movimiento->id,
-            'tipo' => 'editar',
-            'datos_nuevos' => [
-                'tipo' => $request->tipo,
-                'id_stock' => $request->id_stock,
-                'cantidad' => $request->cantidad,
-                'id_unidad_de_produccion' => $request->id_unidad_de_produccion,
-            ],
-            'estado' => 'pendiente',
-        ]);
-
-        return redirect()->route('movimientos.index')->with('success', 'Solicitud de edición enviada. Un administrador o instructor la revisará.');
     }
+
+    // Cargar datos necesarios para el formulario
+    $stocks = Stock::with('insumo', 'almacen')->get();
+
+    // Cargar las unidades de producción según el rol del usuario
+    if ($user->role === 'lider de la unidad') {
+        $unidades = $user->liderUnidades;
+    } else {
+        $unidades = unidades_de_produccion::all();
+    }
+
+    return view('movimientos.solicitar_edicion', compact('movimiento', 'stocks', 'unidades'));
+}
+
+  // Método para procesar la solicitud de edición
+  public function solicitarEdicion(Request $request, $id)
+  {
+      $movimiento = Movimiento::findOrFail($id);
+      $user = Auth::user();
+  
+      // Verificar permisos del líder de unidad
+      if ($user->role === 'lider de la unidad') {
+          $unidadId = $movimiento->id_unidad_de_produccion;
+          if (!$unidadId || !$user->liderUnidades->contains($unidadId)) {
+              abort(403, 'No tienes permisos para solicitar cambios en este movimiento.');
+          }
+      }
+  
+      // Validar los datos del formulario
+      $request->validate([
+          'tipo' => 'required|in:entrada,salida',
+          'id_stock' => 'required|exists:stocks,id',
+          'cantidad' => 'required|integer|min:1',
+          'id_unidad_de_produccion' => 'nullable|exists:unidades_de_produccion,id',
+      ]);
+  
+      // Obtener el stock seleccionado
+      $stock = Stock::findOrFail($request->id_stock);
+  
+      // Validar que la cantidad no sea mayor a la disponible en el stock si es una salida
+      if ($request->tipo === 'salida') {
+          $cantidadDisponible = $stock->cantidad;
+          if ($request->cantidad > $cantidadDisponible) {
+              return redirect()->back()
+                  ->withErrors(['cantidad' => "La cantidad solicitada ($request->cantidad) excede la cantidad disponible en el stock ($cantidadDisponible)."])
+                  ->withInput();
+          }
+      }
+  
+     
+          // Crear la solicitud de edición
+          SolicitudMovimiento::create([
+              'user_id' => $user->id,
+              'movimiento_id' => $movimiento->id,
+              'tipo' => 'editar',
+              'datos_nuevos' => [
+                  'tipo' => $request->tipo,
+                  'id_stock' => $request->id_stock,
+                  'cantidad' => $request->cantidad,
+                  'id_unidad_de_produccion' => $request->id_unidad_de_produccion,
+              ],
+              'estado' => 'pendiente',
+          ]);
+  
+          return redirect()->route('movimientos.index')
+              ->with('success', 'Solicitud de edición enviada. Un administrador o instructor la revisará.');
+     
+  }
 
     public function solicitarEliminacion($id)
     {

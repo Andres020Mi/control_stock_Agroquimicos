@@ -1,43 +1,192 @@
-@extends('layouts.app')
+@extends('layouts.master')
 
-@section('header')
-    Editar Asignaciones de Líder
+@section('title')
+    Editar Asignación de Líder
+@endsection
+
+@section('links_css_head')
+    <style>
+        /* Estilos ajustados para compatibilidad con AdminLTE y responsividad */
+        .content-wrapper {
+            padding: 20px;
+        }
+
+        .card {
+            border-radius: 0.25rem;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            background-color: #15803d;
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .alert-danger {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1.25rem;
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            border-radius: 0.25rem;
+        }
+
+        .btn-success {
+            background-color: #15803d;
+            border-color: #15803d;
+            color: #fff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .btn-success:hover {
+            background-color: #166534;
+            border-color: #166534;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #5a6268;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #212529;
+            margin-bottom: 0.25rem;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            color: #495057;
+            background-color: #fff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        input[type="text"][readonly] {
+            background-color: #e9ecef;
+        }
+
+        select[multiple] {
+            height: 150px; /* Altura fija para el selector múltiple */
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: #15803d;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(21, 128, 61, 0.25);
+        }
+
+        .error-border {
+            border-color: #dc3545 !important;
+        }
+
+        .error-text {
+            color: #dc3545;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-group i {
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-group {
+                flex-direction: column;
+            }
+
+            .form-group label {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 @endsection
 
 @section('content')
-    <div class="container mx-auto py-8">
-        <h1 class="text-3xl font-bold text-green-800 mb-6">Editar Asignaciones de Líder: {{ $user->name }}</h1>
-
-        @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-r-lg shadow-md">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+    <div class="content-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Editar Asignación de Líder</h3>
             </div>
-        @endif
+            <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-        <form action="{{ route('lideres_unidades.update', $user->id) }}" method="POST" class="bg-white p-6 rounded-lg shadow-lg">
-            @csrf
-            @method('PUT')
-            <div class="mb-4">
-                <label for="unidades" class="block text-sm font-medium text-gray-700">Unidades de Producción</label>
-                <select name="unidades[]" id="unidades" multiple class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 @error('unidades') border-red-500 @enderror">
-                    @foreach ($unidades as $unidad)
-                        <option value="{{ $unidad->id }}" {{ in_array($unidad->id, $asignadas) ? 'selected' : '' }}>{{ $unidad->nombre }}</option>
-                    @endforeach
-                </select>
-                @error('unidades')
-                    <span class="text-red-500 text-sm">{{ $message }}</span>
-                @enderror
-            </div>
+                <form action="{{ route('lideres_unidades.update', $users->id) }}" method="POST" class="form-horizontal">
+                    @csrf
+                    @method('PUT')
 
-            <div class="flex justify-end">
-                <button type="submit" class="px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
-                    Actualizar
-                </button>
+                    <div class="form-group mb-4">
+                        <label>
+                            <i class="fas fa-user"></i> Líder
+                        </label>
+                        <input type="text" value="{{ $users->name }} ({{ $users->email }})" readonly>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="unidades">
+                            <i class="fas fa-building"></i> Unidades de Producción
+                        </label>
+                        <select name="unidades[]" id="unidades" class="@error('unidades') error-border @enderror" multiple>
+                            @foreach ($unidades as $unidad)
+                                <option value="{{ $unidad->id }}" {{ in_array($unidad->id, $asignadas) ? 'selected' : '' }}>
+                                    {{ $unidad->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('unidades')
+                            <span class="error-text">{{ $message }}</span>
+                        @enderror
+                        @error('unidades.*')
+                            <span class="error-text">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="flex justify-end space-x-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save mr-1"></i> Actualizar
+                        </button>
+                        <a href="{{ route('lideres_unidades.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left mr-1"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 @endsection

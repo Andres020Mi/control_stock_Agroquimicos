@@ -1,56 +1,170 @@
-@extends('layouts.app')
+@extends('layouts.master')
 
-@section('header')
+@section('title')
     Crear Proveedor
 @endsection
 
+@section('links_css_head')
+    <style>
+        /* Reutilizamos los estilos base de vistas previas */
+        .content-wrapper {
+            padding: 20px;
+        }
+
+        .card {
+            border-radius: 0.25rem;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            background-color: #15803d;
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .form-control:focus {
+            border-color: #15803d;
+            box-shadow: 0 0 0 0.2rem rgba(21, 128, 61, 0.25);
+            outline: none;
+        }
+
+        .alert-danger {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1.25rem;
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            border-radius: 0.25rem;
+        }
+
+        .btn-success {
+            background-color: #15803d;
+            border-color: #15803d;
+            color: #fff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .btn-success:hover {
+            background-color: #166534;
+            border-color: #166534;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+
+        @media (max-width: 768px) {
+            .form-group {
+                margin-bottom: 1rem;
+            }
+            .btn-group {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+@endsection
+
 @section('content')
-    <div class="container mx-auto py-8">
-        <h1 class="text-3xl font-bold text-green-800 mb-6">Crear Nuevo Proveedor</h1>
-
-        @if ($errors->any())
-            <div class="mb-6 p-4 bg-red-100 border-l-4 border-red-600 text-red-800 rounded-r-lg shadow-md">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+    <div class="content-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Crear Nuevo Proveedor</h3>
             </div>
-        @endif
+            <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-        <form action="{{ route('proveedores.store') }}" method="POST" class="bg-white p-6 rounded-lg shadow-lg border border-gray-300">
-            @csrf
+                <form action="{{ route('proveedores.store') }}" method="POST">
+                    @csrf
 
-            <div class="mb-4">
-                <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" name="nombre" id="nombre" value="{{ old('nombre') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" required>
+                    <div class="form-group">
+                        <label for="nombre" class="block font-semibold mb-2">Nombre</label>
+                        <input type="text" name="nombre" id="nombre" value="{{ old('nombre') }}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nit" class="block font-semibold mb-2">NIT</label>
+                        <input type="text" name="nit" id="nit" value="{{ old('nit') }}" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefono" class="block font-semibold mb-2">Teléfono</label>
+                        <input type="text" name="telefono" id="telefono" value="{{ old('telefono') }}" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="block font-semibold mb-2">Email</label>
+                        <input type="email" name="email" id="email" value="{{ old('email') }}" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion" class="block font-semibold mb-2">Dirección</label>
+                        <textarea name="direccion" id="direccion" class="form-control" rows="3">{{ old('direccion') }}</textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save mr-1"></i> Guardar Proveedor
+                        </button>
+                        <a href="{{ route('proveedores.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times mr-1"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
             </div>
-
-            <div class="mb-4">
-                <label for="nit" class="block text-sm font-medium text-gray-700">NIT</label>
-                <input type="text" name="nit" id="nit" value="{{ old('nit') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
-            </div>
-
-            <div class="mb-4">
-                <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
-                <input type="text" name="telefono" id="telefono" value="{{ old('telefono') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
-            </div>
-
-            <div class="mb-4">
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" name="email" id="email" value="{{ old('email') }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
-            </div>
-
-            <div class="mb-4">
-                <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
-                <textarea name="direccion" id="direccion" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">{{ old('direccion') }}</textarea>
-            </div>
-
-            <div class="flex justify-end">
-                <button type="submit" class="px-6 py-3 bg-green-700 text-white font-semibold rounded-lg shadow hover:bg-green-800 transition duration-200">
-                    Guardar Proveedor
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
+@endsection
+
+@section('scritps_end_body')
+    <script src="{{ asset('DataTables/jquery-3.7.1.min.js') }}"></script>
 @endsection

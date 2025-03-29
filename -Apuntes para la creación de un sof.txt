@@ -76,12 +76,12 @@
         });
 
 
-           Schema::create('proveedores', function (Blueprint $table) {
+            Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('nit')->unique()->nullable(); // Identificador fiscal, único pero opcional
+            $table->string('nit')->nullable(); // Identificador fiscal, único pero opcional
             $table->string('telefono')->nullable();
-            $table->string('email')->unique()->nullable();
+            $table->string('email')->nullable();
             $table->text('direccion')->nullable();
             $table->timestamps();
         });
@@ -100,7 +100,51 @@ class AddIdProveedorToStocksTable extends Migration
         });
     }
 
+
+
+        Schema::create('lideres_unidades', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')
+                  ->constrained('users')
+                  ->onDelete('cascade')
+                  ->comment('Usuario que actúa como líder de la unidad');
+            $table->foreignId('unidad_de_produccion_id')
+                  ->constrained('unidades_de_produccion')
+                  ->onDelete('cascade')
+                  ->comment('Unidad de producción asignada al líder');
+            $table->timestamps();
+
+            // Índice único para evitar asignaciones duplicadas (un usuario no puede ser líder de la misma unidad más de una vez)
+            $table->unique(['user_id', 'unidad_de_produccion_id'], 'lideres_unidades_unique');
+        });
    
+
+       Schema::create('solicitudes_movimientos', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')
+                  ->constrained('users')
+                  ->onDelete('cascade')
+                  ->comment('Usuario que solicita el cambio');
+            $table->foreignId('movimiento_id')
+                  ->constrained('movimientos')
+                  ->onDelete('cascade')
+                  ->comment('Movimiento al que se aplica la solicitud');
+            $table->enum('tipo', ['editar', 'eliminar'])
+                  ->comment('Tipo de solicitud: editar o eliminar');
+            $table->json('datos_nuevos')
+                  ->nullable()
+                  ->comment('Datos propuestos para la edición (solo para solicitudes de tipo "editar")');
+            $table->enum('estado', ['pendiente', 'aprobada', 'rechazada'])
+                  ->default('pendiente')
+                  ->comment('Estado de la solicitud');
+            $table->foreignId('aprobador_id')
+                  ->nullable()
+                  ->constrained('users')
+                  ->onDelete('set null')
+                  ->comment('Usuario que aprueba o rechaza la solicitud (admin o instructor)');
+            $table->timestamp('fecha_aprobacion')->nullable();
+            $table->text('motivo_rechazo')->nullable();
+            $table->timestamps();
     }
 
 

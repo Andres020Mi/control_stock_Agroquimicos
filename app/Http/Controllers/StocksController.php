@@ -5,16 +5,63 @@ namespace App\Http\Controllers;
 use App\Models\Stock;
 use App\Models\Insumo;
 use App\Models\Almacen;
-use App\Models\Proveedor; // Nueva dependencia
+use App\Models\Proveedor;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class StocksController extends Controller
 {
     // Show the list of stocks
-    public function index()
+    public function index(Request $request)
     {
-        $stocks = Stock::with(['insumo', 'almacen', 'proveedor'])->get(); // Agregar proveedor
-        return view('stocks.index', compact('stocks'));
+        if ($request->ajax()) {
+            $stocks = Stock::with(['insumo', 'almacen', 'proveedor'])->select([
+                'id',
+                'id_insumo',
+                'cantidad',
+                'cantidad_inicial',
+                'fecha_de_vencimiento',
+                'id_almacen',
+                'id_proveedor',
+                'estado'
+            ]);
+    
+            return DataTables::of($stocks)
+                ->addColumn('insumo_nombre', function ($stock) {
+                    return $stock->insumo ? $stock->insumo->nombre : 'N/A';
+                })
+                ->addColumn('unidad_de_medida', function ($stock) {
+                    return $stock->insumo ? $stock->insumo->unidad_de_medida : '';
+                })
+                ->addColumn('almacen_nombre', function ($stock) {
+                    return $stock->almacen ? $stock->almacen->nombre : 'N/A';
+                })
+                ->addColumn('proveedor_nombre', function ($stock) {
+                    return $stock->proveedor ? $stock->proveedor->nombre : 'Sin proveedor';
+                })
+                ->editColumn('fecha_de_vencimiento', function ($stock) {
+                    return $stock->fecha_de_vencimiento ? $stock->fecha_de_vencimiento->format('d/m/Y') : 'N/A';
+                })
+                ->addColumn('acciones', function ($stock) {
+                    return '
+                        <div class="actions">
+                            <a href="' . route('stocks.edit', $stock->id) . '" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <form action="' . route('stocks.destroy', $stock->id) . '" method="POST" class="inline delete-form">
+                                ' . csrf_field() . '
+                                ' . method_field('DELETE') . '
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>';
+                })
+                ->rawColumns(['acciones'])
+                ->make(true);
+        }
+    
+        return view('stocks.index');
     }
 
     // Show the form to create a new stock

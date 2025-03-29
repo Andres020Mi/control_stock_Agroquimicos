@@ -32,36 +32,39 @@ class LideresUnidadesController extends Controller
     }
 
     public function create()
-    {
-        $users = User::where('role', 'lider de la unidad')->get();
-        $unidades = unidades_de_produccion::all();
-        return view('lideres_unidades.create', compact('users', 'unidades'));
-    }
+{
+    // Obtener solo los líderes que no tienen una unidad asignada
+    $users = User::where('role', 'lider de la unidad')
+        ->whereDoesntHave('liderUnidades')
+        ->get();
 
+    $unidades = unidades_de_produccion::all();
+    return view('lideres_unidades.create', compact('users', 'unidades'));
+}
     public function store(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'unidad_de_produccion_id' => 'required|exists:unidades_de_produccion,id',
         ]);
-
+    
         $user = User::findOrFail($request->user_id);
         $unidad = unidades_de_produccion::findOrFail($request->unidad_de_produccion_id);
-
-        // Asignar el usuario como líder de la unidad
-        $user->liderUnidades()->syncWithoutDetaching($unidad->id);
-
+    
+        // Asignar el usuario como líder de la unidad, sobrescribiendo cualquier asignación previa
+        $user->liderUnidades()->sync([$unidad->id]);
+    
         return redirect()->route('lideres_unidades.index')->with('success', 'Líder asignado a la unidad exitosamente.');
     }
 
     public function edit($user_id)
     {
-        $user = User::where('role', 'lider de la unidad')->findOrFail($user_id);
+        $users = User::where('role', 'lider de la unidad')->findOrFail($user_id);
         $unidades = unidades_de_produccion::all();
-        $asignadas = $user->liderUnidades->pluck('id')->toArray();
+        $asignadas = $users->liderUnidades->pluck('id')->toArray();
 
-        dd($unidades,$user,$asignadas);
-        return view('lideres_unidades.edit', compact('user', 'unidades', 'asignadas'));
+       
+        return view('lideres_unidades.edit', compact('users', 'unidades', 'asignadas'));
     }
 
     public function update(Request $request, $user_id)

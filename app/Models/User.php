@@ -61,7 +61,7 @@ class User extends Authenticatable
     // Relación: Un usuario puede ser líder de varias unidades
     public function liderUnidades()
     {
-        return $this->belongsToMany(UnidadDeProduccion::class, 'lideres_unidades', 'user_id', 'unidad_de_produccion_id')
+        return $this->belongsToMany(unidades_de_produccion::class, 'lideres_unidades', 'user_id', 'unidad_de_produccion_id')
                     ->withTimestamps();
     }
 

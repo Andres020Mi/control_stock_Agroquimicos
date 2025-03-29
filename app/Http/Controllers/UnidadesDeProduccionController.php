@@ -2,16 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\unidades_de_produccion; // Using the exact name as requested
+use App\Models\unidades_de_produccion; // Mantengo el nombre exacto del modelo
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class UnidadesDeProduccionController extends Controller
 {
     // Show the list of unidades de produccion
-    public function index()
+    public function index(Request $request)
     {
-        $unidades = unidades_de_produccion::all(); // Fetch all production units
-        return view('unidades_de_produccion.index', compact('unidades'));
+        if ($request->ajax()) {
+            $unidades = unidades_de_produccion::select(['id', 'nombre', 'descripcion']);
+
+            return DataTables::of($unidades)
+                ->addColumn('acciones', function ($unidad) {
+                    return '
+                        <div class="actions">
+                            <a href="' . route('unidades_de_produccion.edit', $unidad->id) . '" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <form action="' . route('unidades_de_produccion.destroy', $unidad->id) . '" method="POST" class="inline delete-form">
+                                ' . csrf_field() . '
+                                ' . method_field('DELETE') . '
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>';
+                })
+                ->rawColumns(['acciones'])
+                ->make(true);
+        }
+
+        return view('unidades_de_produccion.index');
     }
 
     // Show the form to create a new unidad de produccion

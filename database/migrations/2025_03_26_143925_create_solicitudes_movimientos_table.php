@@ -23,7 +23,7 @@ class CreateSolicitudesMovimientosTable extends Migration
             $table->json('datos_nuevos')
                   ->nullable()
                   ->comment('Datos propuestos para la edición (solo para solicitudes de tipo "editar")');
-            $table->enum('estado', ['pendiente', 'aprobada', 'rechazada'])
+            $table->enum('estado', ['pendiente', 'aprobada', 'rechazada','cancelada'])
                   ->default('pendiente')
                   ->comment('Estado de la solicitud');
             $table->foreignId('aprobador_id')

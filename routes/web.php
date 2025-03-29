@@ -10,6 +10,7 @@ use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\SolicitudesMovimientosController;
 use App\Http\Controllers\UnidadesDeProduccionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,49 +58,67 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/lideres-unidades/{user_id}', [LideresUnidadesController::class, 'update'])->name('lideres_unidades.update');
         Route::delete('/lideres-unidades/{user_id}/{unidad_id}', [LideresUnidadesController::class, 'destroy'])->name('lideres_unidades.destroy');
 
+
+        // Gestionar stock
         Route::get('/stocks/create', [StocksController::class, 'create'])->name('stocks.create');
         Route::post('/stocks', [StocksController::class, 'store'])->name('stocks.store');
         Route::get('/stocks/{id}/edit', [StocksController::class, 'edit'])->name('stocks.edit');
         Route::put('/stocks/{id}', [StocksController::class, 'update'])->name('stocks.update');
         Route::delete('/stocks/{id}', [StocksController::class, 'destroy'])->name('stocks.destroy');
-
+// Gestionar almacenes
         Route::get('/almacenes/create', [AlmacenesController::class, 'create'])->name('almacenes.create');
         Route::post('/almacenes', [AlmacenesController::class, 'store'])->name('almacenes.store');
         Route::get('/almacenes/{id}/edit', [AlmacenesController::class, 'edit'])->name('almacenes.edit');
         Route::put('/almacenes/{id}', [AlmacenesController::class, 'update'])->name('almacenes.update');
         Route::delete('/almacenes/{id}', [AlmacenesController::class, 'destroy'])->name('almacenes.destroy');
-
-        Route::get('/movimientos/create', [MovimientosController::class, 'create'])->name('movimientos.create');
-        Route::post('/movimientos', [MovimientosController::class, 'store'])->name('movimientos.store');
+// Gestionar mocimientos
+        
+        
         Route::get('/movimientos/{id}/edit', [MovimientosController::class, 'edit'])->name('movimientos.edit');
         Route::put('/movimientos/{id}', [MovimientosController::class, 'update'])->name('movimientos.update');
         Route::delete('/movimientos/{id}', [MovimientosController::class, 'destroy'])->name('movimientos.destroy');
-
+// gestionar unidad de produccion
         Route::get('/unidades-de-produccion/create', [UnidadesDeProduccionController::class, 'create'])->name('unidades_de_produccion.create');
         Route::post('/unidades-de-produccion', [UnidadesDeProduccionController::class, 'store'])->name('unidades_de_produccion.store');
         Route::get('/unidades-de-produccion/{id}/edit', [UnidadesDeProduccionController::class, 'edit'])->name('unidades_de_produccion.edit');
         Route::put('/unidades-de-produccion/{id}', [UnidadesDeProduccionController::class, 'update'])->name('unidades_de_produccion.update');
         Route::delete('/unidades-de-produccion/{id}', [UnidadesDeProduccionController::class, 'destroy'])->name('unidades_de_produccion.destroy');
 
-
+// gestionar unidad de provedores
         Route::get('/proveedores/create', [ProveedoresController::class, 'create'])->name('proveedores.create');
         Route::post('/proveedores', [ProveedoresController::class, 'store'])->name('proveedores.store');
         Route::get('/proveedores/{id}/edit', [ProveedoresController::class, 'edit'])->name('proveedores.edit');
-        Route::put('/proveedores/{id}', [ProveedoresController::class, 'update'])->name('proveedores.update');
+        Route::put('proveedores/{id}', [ProveedoresController::class, 'update'])->name('proveedores.update');
         Route::delete('/proveedores/{id}', [ProveedoresController::class, 'destroy'])->name('proveedores.destroy');
 
-        Route::get('/movimientos/solicitudes-movimientos', [SolicitudesMovimientosController::class, 'index'])->name('solicitudes_movimientos.index');
+
+        // Gestionar solicitudes de movimientos
+        Route::get('solicitudes-movimientos', [SolicitudesMovimientosController::class, 'index'])->name('solicitudes_movimientos.index');
+    Route::get('solicitudes-movimientos/create', [SolicitudesMovimientosController::class, 'create'])->name('solicitudes_movimientos.create');
+    Route::post('solicitudes-movimientos', [SolicitudesMovimientosController::class, 'store'])->name('solicitudes_movimientos.store');
+    Route::get('solicitudes-movimientos/{id}/edit', [SolicitudesMovimientosController::class, 'edit'])->name('solicitudes_movimientos.edit');
+    Route::put('solicitudes-movimientos/{id}', [SolicitudesMovimientosController::class, 'update'])->name('solicitudes_movimientos.update');
+    Route::get('solicitudes-movimientos/revisadas', [SolicitudesMovimientosController::class, 'revisadas'])->name('solicitudes_movimientos.revisadas');
     });
 
 
     // rutas para los Lideres de unidades
     Route::middleware(['role:admin,instructor,lider de la unidad'])->group(function () {
-        // Rutas para solicitar la edicion o eliminacion de un registro echo
-        Route::post('/movimientos/{id}/solicitar-edicion', [MovimientosController::class, 'solicitarEdicion'])->name('movimientos.solicitar_edicion');
-        Route::delete('/movimientos/{id}/solicitar-eliminacion', [MovimientosController::class, 'solicitarEliminacion'])->name('movimientos.solicitar_eliminacion');
-        // Rutas para solicitar edición y eliminación de movimientos
-        Route::get('movimientos/{movimiento}/solicitar-edicion', [MovimientosController::class, 'solicitarEdicion'])->name('movimientos.solicitarEdicion');
-        Route::delete('movimientos/{movimiento}/solicitar-eliminacion', [MovimientosController::class, 'solicitarEliminacion'])->name('movimientos.solicitarEliminacion');
+       // Crear un movimiento
+    Route::post('/movimientos', [MovimientosController::class, 'store'])->name('movimientos.store');
+    Route::get('/movimientos/create', [MovimientosController::class, 'create'])->name('movimientos.create');
+
+    // Rutas para solicitar edición de movimientos
+    Route::get('movimientos/{movimiento}/solicitar-edicion', [MovimientosController::class, 'mostrarFormularioEdicion'])->name('movimientos.mostrarSolicitarEdicion');
+    Route::post('movimientos/{movimiento}/solicitar-edicion', [MovimientosController::class, 'solicitarEdicion'])->name('movimientos.solicitarEdicion');
+
+    // Ruta para solicitar eliminación de movimientos
+    Route::delete('movimientos/{movimiento}/solicitar-eliminacion', [MovimientosController::class, 'solicitarEliminacion'])->name('movimientos.solicitarEliminacion');
+
+    // Mis solicitudes de movimientos
+    Route::get('solicitudes-movimientos/mis-solicitudes', [SolicitudesMovimientosController::class, 'misSolicitudes'])->name('solicitudes_movimientos.mis_solicitudes');
+    Route::delete('solicitudes-movimientos/{id}/cancelar', [SolicitudesMovimientosController::class, 'cancelar'])->name('solicitudes_movimientos.cancelar');
+        
     });
 
 
@@ -130,6 +149,6 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
+
+Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
